@@ -32,7 +32,7 @@ jobs:
         run: npx ng build dv-demo --configuration production --base-href /dv-workspace/
 
       - name: Deploy to GitHub Pages
-        uses: angular-schule/action-ghpages-deploy@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SOURCE_DIR: dist/dv-demo/browser
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist/dv-demo/browser
