@@ -1,0 +1,26 @@
+{
+  "name": "dv-datagrid",
+  "version": "1.0.0",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "datagrid",
+    "data-grid",
+    "table",
+    "grid",
+    "pagination",
+    "sorting",
+    "filtering",
+    "angular-component",
+    "standalone",
+    "signals"
+  ],
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

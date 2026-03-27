@@ -1,0 +1,72 @@
+<div class="grid-pagination">
+  <div class="pagination-info">
+    @if (totalRecords() > 0) {
+      <span>{{ rangeStart() }}–{{ rangeEnd() }} {{ locale().of }} {{ totalRecords() }}</span>
+    } @else {
+      <span>{{ locale().noRecords }}</span>
+    }
+  </div>
+
+  <div class="pagination-controls">
+    <!-- Page size selector -->
+    <div class="page-size-selector">
+      <label>{{ locale().rowsPerPage }}</label>
+      <select [value]="pageSize()" (change)="onPageSizeChange($event)">
+        @for (option of pageSizeOptions(); track option) {
+          <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Navigation -->
+    <div class="page-nav">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() <= 1"
+        (click)="goFirst()"
+        [title]="locale().firstPage"
+      >
+        &#171;
+      </button>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() <= 1"
+        (click)="goPrev()"
+        [title]="locale().previousPage"
+      >
+        &#8249;
+      </button>
+
+      @for (page of visiblePages(); track $index) {
+        @if (page === '...') {
+          <span class="page-ellipsis">&#8230;</span>
+        } @else {
+          <button
+            class="page-btn page-number"
+            [class.active]="page === currentPage()"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        }
+      }
+
+      <button
+        class="page-btn"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="goNext()"
+        [title]="locale().nextPage"
+      >
+        &#8250;
+      </button>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="goLast()"
+        [title]="locale().lastPage"
+      >
+        &#187;
+      </button>
+    </div>
+  </div>
+</div>

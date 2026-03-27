@@ -1,0 +1,223 @@
+<div class="my-data-grid" [class]="themeClass()">
+  <!-- Table -->
+  <div class="grid-wrapper">
+    <table class="grid-table">
+      <!-- HEADER -->
+      <thead>
+        <tr class="grid-header-row">
+          @if (rowExpansionEnabled()) {
+            <th class="grid-header-cell expansion-header"></th>
+          }
+          @if (selectionMode() === 'multi') {
+            <th class="grid-header-cell selection-header">
+              <input
+                type="checkbox"
+                class="row-checkbox"
+                [checked]="headerCheckboxState() === 'all'"
+                [indeterminate]="headerCheckboxState() === 'some'"
+                (change)="onHeaderCheckboxChange()"
+                (click)="$event.stopPropagation()"
+              />
+            </th>
+          }
+          @for (col of columnDefs(); track col.field) {
+            <th
+              class="grid-header-cell"
+              [style.width.px]="col.width"
+              [style.minWidth.px]="col.minWidth"
+              [class.sortable]="col.sortable !== false"
+              [class.sorted]="getSortDirection(col.field) !== null"
+              [class.filtered]="hasActiveFilter(col.field)"
+              (click)="onHeaderClick(col)"
+            >
+              <div class="header-content">
+                <span class="header-label">{{ col.headerName || col.field }}</span>
+
+                <div class="header-actions">
+                  <!-- Sort indicator -->
+                  @if (col.sortable !== false) {
+                    <span class="sort-indicator">
+                      @switch (getSortDirection(col.field)) {
+                        @case ('asc') {
+                          <span class="sort-icon sort-asc">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                            </svg>
+                          </span>
+                        }
+                        @case ('desc') {
+                          <span class="sort-icon sort-desc">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 20l8-8h-5V4H9v8H4z" />
+                            </svg>
+                          </span>
+                        }
+                        @default {
+                          <span class="sort-icon sort-none">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M7 10l5-5 5 5z" />
+                              <path d="M7 14l5 5 5-5z" />
+                            </svg>
+                          </span>
+                        }
+                      }
+                    </span>
+                  }
+
+                  <!-- Filter icon -->
+                  @if (isFilterable(col)) {
+                    <button
+                      class="filter-trigger"
+                      [class.filter-active]="hasActiveFilter(col.field)"
+                      (click)="toggleFilterMenu($event, col.field)"
+                      [title]="locale().filterButtonTitle"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </div>
+            </th>
+          }
+        </tr>
+      </thead>
+
+      <!-- BODY -->
+      <tbody>
+        @if (isLoading()) {
+          <tr class="loading-row">
+            <td [attr.colspan]="totalColspan()" class="loading-cell">
+              <div class="loading-spinner">
+                <div class="spinner"></div>
+                <span>{{ locale().loading }}</span>
+              </div>
+            </td>
+          </tr>
+        } @else if (rowData().length === 0) {
+          <tr class="no-data-row">
+            <td [attr.colspan]="totalColspan()" class="no-data-cell">{{ locale().noData }}</td>
+          </tr>
+        } @else {
+          @for (row of rowData(); track $index) {
+            <tr
+              class="grid-row"
+              [class.selected]="isRowSelected(row, $index)"
+              [class.expanded]="isRowExpanded(row, $index)"
+              [class.selectable]="selectionEnabled()"
+              (click)="onRowClick($event, row, $index)"
+            >
+              @if (rowExpansionEnabled()) {
+                <td class="grid-cell expansion-cell">
+                  <button
+                    class="expand-btn"
+                    [class.expanded]="isRowExpanded(row, $index)"
+                    (click)="onExpandToggle($event, row, $index)"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5l8 7-8 7z"/>
+                    </svg>
+                  </button>
+                </td>
+              }
+              @if (selectionMode() === 'multi') {
+                <td class="grid-cell selection-cell">
+                  <input
+                    type="checkbox"
+                    class="row-checkbox"
+                    [checked]="isRowSelected(row, $index)"
+                    (change)="onRowCheckboxChange($event, row, $index)"
+                    (click)="$event.stopPropagation()"
+                  />
+                </td>
+              }
+              @for (col of columnDefs(); track col.field) {
+                <td
+                  class="grid-cell"
+                  (mouseenter)="onCellMouseEnter($event, col, row, $index)"
+                  (mouseleave)="onCellMouseLeave()"
+                >
+                  @if (col.cellRenderer && isTemplateRef(col.cellRenderer)) {
+                    <ng-container
+                      *ngTemplateOutlet="
+                        col.cellRenderer;
+                        context: {
+                          $implicit: getValue(row, col.field),
+                          row: row,
+                          field: col.field,
+                          rowIndex: $index,
+                          params: col.cellRendererParams,
+                        }
+                      "
+                    />
+                  } @else if (col.cellRenderer) {
+                    <ng-container
+                      *ngComponentOutlet="col.cellRenderer; inputs: getCellRendererInputs(col, row)"
+                    />
+                  } @else if (col.valueFormatter) {
+                    {{ col.valueFormatter(row) }}
+                  } @else {
+                    {{ getValue(row, col.field) }}
+                  }
+                </td>
+              }
+            </tr>
+
+            @if (rowExpansionEnabled() && isRowExpanded(row, $index) && detailTemplate()) {
+              <tr class="detail-row">
+                <td [attr.colspan]="totalColspan()" class="detail-cell">
+                  <ng-container
+                    *ngTemplateOutlet="detailTemplate()!; context: { $implicit: row, rowIndex: $index }"
+                  />
+                </td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION -->
+  @if (paginationEnabled()) {
+    <dv-datagrid-pagination
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [pageSizeOptions]="pageSizeOptions()"
+      [locale]="locale()"
+      (pageChanged)="onPageChanged($event)"
+      (pageSizeChanged)="onPageSizeChanged($event)"
+    />
+  }
+</div>
+
+<!-- Tooltip rendered OUTSIDE the grid to avoid overflow clipping -->
+@if (tooltipText() !== null) {
+  <div
+    class="grid-tooltip"
+    [style.top.px]="tooltipPos().top"
+    [style.left.px]="tooltipPos().left"
+  >{{ tooltipText() }}</div>
+}
+
+<!-- Filter dropdown rendered OUTSIDE the grid to avoid overflow clipping -->
+@if (openFilterField() !== null) {
+  @for (col of columnDefs(); track col.field) {
+    @if (openFilterField() === col.field) {
+      <dv-datagrid-filter-menu
+        [filterType]="getFilterType(col)!"
+        [field]="col.field"
+        [currentFilter]="getColumnFilter(col.field)"
+        [setFilterValues]="col.filterValues ?? []"
+        [positionTop]="filterMenuPos().top"
+        [positionLeft]="filterMenuPos().left"
+        [locale]="locale()"
+        (filterApplied)="onFilterApplied(col.field, $event)"
+        (filterCleared)="onFilterCleared(col.field)"
+        (closed)="onFilterMenuClosed()"
+      />
+    }
+  }
+}

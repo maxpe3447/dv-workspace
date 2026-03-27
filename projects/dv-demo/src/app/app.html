@@ -1,0 +1,287 @@
+<div class="demo-page">
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="demo-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <img class="brand-logo" src="android-chrome-192x192.png" alt="dv-datagrid logo">
+        <span class="brand-name">dv-datagrid</span>
+        <span class="brand-badge">Angular</span>
+      </div>
+      <div class="header-center">
+        A powerful server-side data grid for Angular with filtering, sorting, pagination, selection & row expansion
+      </div>
+      <div class="header-right">
+        <code class="header-install-cmd">npm install dv-datagrid</code>
+        <a class="header-brand-link" href="https://deepvyne.com" target="_blank" rel="noopener">
+          <span class="header-brand-by">by</span>
+          <span class="header-brand-deepvyne">deepvyne</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════ BODY ══════════════ -->
+  <div class="demo-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="demo-sidebar">
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Theme</div>
+        <div class="btn-group-col">
+          @for (t of themes; track t.value) {
+            <button
+              class="btn-option"
+              [class.active]="activeTheme() === t.value"
+              (click)="activeTheme.set(t.value)">
+              <span class="theme-dot" [class]="'dot-' + t.value"></span>
+              {{ t.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Locale</div>
+        <div class="btn-group-col">
+          <button class="btn-option" [class.active]="activeLocale() === 'en'" (click)="activeLocale.set('en')">
+            🇺🇸 English
+          </button>
+          <button class="btn-option" [class.active]="activeLocale() === 'uk'" (click)="activeLocale.set('uk')">
+            🇺🇦 Ukrainian
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Options</div>
+        <label class="toggle-row">
+          <input type="checkbox" [checked]="expansionEnabled()" (change)="expansionEnabled.set(!expansionEnabled())">
+          <span>Row Expansion</span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" [checked]="paginationEnabled()" (change)="paginationEnabled.set(!paginationEnabled())">
+          <span>Pagination</span>
+        </label>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">API Controls</div>
+        <div class="api-grid">
+          <button class="btn-api" (click)="selectAllOnPage()">Select Page</button>
+          <button class="btn-api" (click)="clearSelection()">Clear Sel.</button>
+          <button class="btn-api" (click)="resetAll()">Reset All</button>
+          <button class="btn-api" (click)="refreshData()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Live Status</div>
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="status-val">{{ selectedCount() }}</div>
+            <div class="status-key">Selected</div>
+          </div>
+          <div class="status-card">
+            <div class="status-val">{{ totalRecords() }}</div>
+            <div class="status-key">Total</div>
+          </div>
+          <div class="status-card">
+            <div class="status-val">{{ currentPage() }}/{{ totalPages() }}</div>
+            <div class="status-key">Page</div>
+          </div>
+          <div class="status-card" [class.has-filters]="filterCount() > 0">
+            <div class="status-val">{{ filterCount() }}</div>
+            <div class="status-key">Filters</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section sidebar-features">
+        <div class="sidebar-label">Features</div>
+        <ul class="feature-list">
+          <li>✓ Server-side pagination</li>
+          <li>✓ Multi-column sort</li>
+          <li>✓ Text / Number / Date / Set filters</li>
+          <li>✓ Single &amp; multi row selection</li>
+          <li>✓ Component &amp; template cell renderers</li>
+          <li>✓ Row expansion detail panel</li>
+          <li>✓ Value formatters</li>
+          <li>✓ Dynamic cell classes</li>
+          <li>✓ Configurable tooltips</li>
+          <li>✓ 3 built-in themes</li>
+          <li>✓ Full i18n / locale support</li>
+          <li>✓ Grid API (signals-based)</li>
+        </ul>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="demo-main">
+
+      <!-- ─ Grid section ─ -->
+      <section class="grid-section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Live Demo</h2>
+            <p class="section-subtitle">
+              200 employee records · server-side pagination, sorting &amp; filtering ·
+              multi-select · row expansion · custom cell renderers
+            </p>
+          </div>
+          <div class="column-legend">
+            <span class="legend-item"><span class="legend-dot comp"></span>Component renderer</span>
+            <span class="legend-item"><span class="legend-dot tpl"></span>Template renderer</span>
+            <span class="legend-item"><span class="legend-dot fmt"></span>Value formatter</span>
+          </div>
+        </div>
+
+        <dv-datagrid
+          [columnDefs]="columnDefs"
+          [options]="gridOptions()"
+          [detailTemplate]="detailTpl"
+          (serverDataRequested)="onServerDataRequested($event)"
+          (gridReady)="onGridReady($event)"
+          (selectionChanged)="onSelectionChanged($event)"
+        />
+      </section>
+
+      <!-- ─ Code examples section ─ -->
+      <section class="code-section">
+
+        <div class="code-section-header">
+          <h3 class="code-section-title">Code Examples</h3>
+          <p class="code-section-sub">All features demonstrated above are shown in the snippets below</p>
+        </div>
+
+        <!-- Example tabs -->
+        <div class="example-tabs">
+          @for (ex of exampleList; track ex.key) {
+            <button
+              class="example-tab"
+              [class.active]="activeExample() === ex.key"
+              (click)="setExample(ex.key)">
+              {{ ex.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Code panel -->
+        <div class="code-panel">
+          <div class="code-toolbar">
+            <div class="lang-tabs">
+              <button class="lang-tab" [class.active]="activeLang() === 'ts'" (click)="activeLang.set('ts')">
+                TypeScript
+              </button>
+              @if (currentExample()?.hasHtml) {
+                <button class="lang-tab" [class.active]="activeLang() === 'html'" (click)="activeLang.set('html')">
+                  HTML
+                </button>
+              }
+            </div>
+            <button class="copy-btn" [class.copied]="copiedCode()" (click)="copyCode()">
+              @if (copiedCode()) { ✓ Copied } @else { Copy }
+            </button>
+          </div>
+          <pre class="code-block"><code>{{ currentCode() }}</code></pre>
+        </div>
+
+      </section>
+
+    </main>
+  </div><!-- /demo-layout -->
+
+  <!-- ══════════════ FOOTER ══════════════ -->
+  <footer class="demo-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-lib">dv-datagrid</span>
+        <span class="footer-sep">—</span>
+        <span class="footer-desc">Open-source Angular data grid</span>
+      </div>
+      <div class="footer-center">
+        <span>Built with ❤️ by</span>
+        <a class="footer-brand" href="https://deepvyne.com" target="_blank" rel="noopener">deepvyne</a>
+      </div>
+      <div class="footer-right">
+        <a class="footer-link" href="https://deepvyne.com" target="_blank" rel="noopener">deepvyne.com</a>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /demo-page -->
+
+<!-- ══════════════ TEMPLATES ══════════════ -->
+
+<!-- Email cell renderer -->
+<ng-template #emailTpl let-value>
+  <a [href]="'mailto:' + value" class="email-link">{{ value }}</a>
+</ng-template>
+
+<!-- Row expansion detail panel -->
+<ng-template #detailTpl let-row>
+  <div class="detail-panel">
+
+    <div class="detail-info-row">
+      <div class="detail-info-item">
+        <span class="detail-label">Phone</span>
+        <span class="detail-value">{{ row.phone }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="detail-label">Department</span>
+        <span class="detail-value">{{ row.department }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="detail-label">Role</span>
+        <span class="detail-value">{{ row.role }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="detail-label">Joined</span>
+        <span class="detail-value">{{ row.joinDate }}</span>
+      </div>
+      <div class="detail-info-item">
+        <span class="detail-label">Salary</span>
+        <span class="detail-value">${{ row.salary | number }}</span>
+      </div>
+    </div>
+
+    <div class="detail-orders">
+      <div class="detail-orders-title">Orders ({{ row.orders.length }})</div>
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Product</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="col-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of row.orders; track order.orderId) {
+            <tr>
+              <td class="col-muted">{{ order.orderId }}</td>
+              <td>{{ order.product }}</td>
+              <td>{{ order.date }}</td>
+              <td>
+                <span class="order-badge" [class]="'order-' + order.orderStatus">
+                  {{ order.orderStatus }}
+                </span>
+              </td>
+              <td class="col-right">{{ order.amount | number:'1.2-2' }} $</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="col-right total-label">Total</td>
+            <td class="col-right total-value">{{ orderTotal(row.orders) | number:'1.2-2' }} $</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+  </div>
+</ng-template>

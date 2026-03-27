@@ -1,0 +1,367 @@
+.my-data-grid {
+  --header-bg: #f8f9fa;
+  --header-text: #212529;
+  --header-border: #dee2e6;
+  --cell-bg: #ffffff;
+  --cell-text: #212529;
+  --cell-border: #dee2e6;
+  --row-hover: #f1f3f5;
+  --row-selected: #e7f3ff;
+  --accent-color: #0d6efd;
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size: 14px;
+  --header-font-weight: 600;
+  --border-radius: 8px;
+  --pagination-bg: #ffffff;
+  --pagination-border: #dee2e6;
+
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  color: var(--cell-text);
+  width: 100%;
+  border: 1px solid var(--header-border);
+  border-radius: var(--border-radius);
+  background-color: var(--cell-bg);
+  position: relative;
+  overflow: hidden;
+
+  // ====================== WRAPPER ======================
+  .grid-wrapper {
+    overflow: auto;
+    max-height: 560px;
+  }
+
+  // ====================== TABLE ======================
+  .grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    .grid-header-row {
+      background-color: var(--header-bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      th.expansion-header {
+        width: 36px;
+        min-width: 36px;
+        cursor: default;
+      }
+
+      th.selection-header {
+        width: 40px;
+        min-width: 40px;
+        text-align: center;
+        cursor: default;
+      }
+
+      th.grid-header-cell {
+        padding: 12px 10px;
+        border-bottom: 2px solid var(--header-border);
+        border-right: 1px solid var(--header-border);
+        text-align: left;
+        font-weight: var(--header-font-weight);
+        color: var(--header-text);
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: ellipsis;
+        position: relative;
+        user-select: none;
+
+        &:last-child {
+          border-right: none;
+        }
+
+        // Header content layout
+        .header-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 4px;
+        }
+
+        .header-label {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .header-actions {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+          flex-shrink: 0;
+        }
+
+        // Sort indicator
+        .sort-indicator {
+          display: inline-flex;
+          align-items: center;
+
+          .sort-icon {
+            display: inline-flex;
+            align-items: center;
+
+            svg {
+              display: block;
+            }
+          }
+
+          .sort-none {
+            opacity: 0.25;
+          }
+
+          .sort-asc,
+          .sort-desc {
+            color: var(--accent-color);
+            opacity: 1;
+          }
+        }
+
+        // Filter trigger button
+        .filter-trigger {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          padding: 0;
+          border: none;
+          border-radius: 3px;
+          background: transparent;
+          color: var(--header-text);
+          opacity: 0.3;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          svg {
+            display: block;
+          }
+
+          &:hover {
+            opacity: 0.7;
+            background-color: rgba(0, 0, 0, 0.06);
+          }
+
+          &.filter-active {
+            opacity: 1;
+            color: var(--accent-color);
+          }
+        }
+
+        &.sortable {
+          cursor: pointer;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+
+            .sort-none {
+              opacity: 0.5;
+            }
+          }
+        }
+
+        &.sorted {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        &.filtered {
+          background-color: rgba(13, 110, 253, 0.04);
+        }
+      }
+    }
+
+    // ====================== BODY ======================
+    tbody {
+      .grid-row {
+        transition: background-color 0.1s ease;
+
+        &.selectable {
+          cursor: pointer;
+        }
+
+        &.selected {
+          background-color: var(--row-selected);
+
+          &:hover {
+            background-color: color-mix(in srgb, var(--row-selected) 85%, #000 15%);
+          }
+        }
+
+        &:hover {
+          background-color: var(--row-hover);
+        }
+
+        td.expansion-cell {
+          width: 36px;
+          min-width: 36px;
+          text-align: center;
+          padding: 0;
+          border-bottom: 1px solid var(--cell-border);
+          border-right: 1px solid var(--cell-border);
+        }
+
+        .expand-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          color: var(--header-text, #374151);
+          border-radius: 4px;
+          transition: background-color 0.15s ease, transform 0.2s ease;
+
+          svg {
+            transition: transform 0.2s ease;
+          }
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.06);
+          }
+
+          &.expanded svg {
+            transform: rotate(90deg);
+          }
+        }
+
+        tr.detail-row td.detail-cell {
+          padding: 0;
+          background-color: var(--detail-bg, #f8f9fb);
+          border-bottom: 2px solid var(--cell-border);
+        }
+
+        td.selection-cell {
+          width: 40px;
+          min-width: 40px;
+          text-align: center;
+          padding: 0;
+          border-bottom: 1px solid var(--cell-border);
+          border-right: 1px solid var(--cell-border);
+        }
+
+        td.grid-cell {
+          padding: 10px 10px;
+          border-bottom: 1px solid var(--cell-border);
+          border-right: 1px solid var(--cell-border);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+
+      .loading-row,
+      .no-data-row {
+        td {
+          padding: 40px 20px;
+          text-align: center;
+          color: #6c757d;
+          font-style: italic;
+        }
+      }
+
+      .loading-spinner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid var(--cell-border);
+          border-top-color: var(--accent-color);
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+        }
+      }
+    }
+  }
+
+  // ====================== SELECTION CHECKBOX ======================
+  .row-checkbox {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+    display: block;
+    margin: 0 auto;
+  }
+
+  // ====================== THEMES ======================
+
+  &.my-data-grid-theme-alpine {
+    --header-bg: #f8f9fa;
+    --header-border: #d0d7de;
+    --accent-color: #1e40af;
+  }
+
+  &.my-data-grid-theme-dark {
+    --header-bg: #2d3748;
+    --header-text: #e2e8f0;
+    --cell-bg: #1a202c;
+    --cell-text: #e2e8f0;
+    --cell-border: #4a5568;
+    --row-hover: #2d3748;
+    --header-border: #4a5568;
+    --pagination-bg: #1a202c;
+    --pagination-border: #4a5568;
+  }
+
+  &.my-data-grid-theme-material {
+    --header-bg: #f5f5f5;
+    --header-text: #424242;
+    --accent-color: #1976d2;
+    --cell-border: #e0e0e0;
+    --border-radius: 4px;
+  }
+
+  // ====================== Scrollbar ======================
+  .grid-wrapper::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .grid-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  .grid-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+.grid-tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
+  padding: 6px 10px;
+  background-color: #1e2530;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  animation: tooltip-fade-in 0.1s ease;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

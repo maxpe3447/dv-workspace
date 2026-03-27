@@ -1,0 +1,129 @@
+<div
+  class="filter-menu"
+  [style.top.px]="positionTop()"
+  [style.left.px]="positionLeft()"
+  (click)="$event.stopPropagation()"
+>
+  <div class="filter-menu-header">
+    <span class="filter-menu-title">{{ locale().filterMenuTitle }}</span>
+  </div>
+
+  <div class="filter-menu-body">
+    @switch (filterType()) {
+      <!-- TEXT FILTER -->
+      @case ('text') {
+        <div class="filter-field">
+          <label>{{ locale().operator }}</label>
+          <select [value]="textOperator()" (change)="onTextOperatorChange($event)">
+            @for (op of textOperators(); track op.value) {
+              <option [value]="op.value" [selected]="op.value === textOperator()">
+                {{ op.label }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>{{ locale().value }}</label>
+          <input
+            type="text"
+            [value]="textValue()"
+            (input)="onTextValueInput($event)"
+            [placeholder]="locale().filterValuePlaceholder"
+          />
+        </div>
+      }
+
+      <!-- NUMBER FILTER -->
+      @case ('number') {
+        <div class="filter-field">
+          <label>{{ locale().operator }}</label>
+          <select [value]="numberOperator()" (change)="onNumberOperatorChange($event)">
+            @for (op of numberOperators(); track op.value) {
+              <option [value]="op.value" [selected]="op.value === numberOperator()">
+                {{ op.label }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>{{ locale().value }}</label>
+          <input
+            type="number"
+            [value]="numberValue()"
+            (input)="onNumberValueInput($event)"
+            [placeholder]="locale().filterValuePlaceholder"
+          />
+        </div>
+        @if (showNumberTo()) {
+          <div class="filter-field">
+            <label>{{ locale().to }}</label>
+            <input
+              type="number"
+              [value]="numberValueTo()"
+              (input)="onNumberValueToInput($event)"
+              [placeholder]="locale().toValuePlaceholder"
+            />
+          </div>
+        }
+      }
+
+      <!-- DATE FILTER -->
+      @case ('date') {
+        <div class="filter-field">
+          <label>{{ locale().operator }}</label>
+          <select [value]="dateOperator()" (change)="onDateOperatorChange($event)">
+            @for (op of dateOperators(); track op.value) {
+              <option [value]="op.value" [selected]="op.value === dateOperator()">
+                {{ op.label }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>{{ locale().value }}</label>
+          <input
+            type="date"
+            [value]="dateValue()"
+            (input)="onDateValueInput($event)"
+          />
+        </div>
+        @if (showDateTo()) {
+          <div class="filter-field">
+            <label>{{ locale().to }}</label>
+            <input
+              type="date"
+              [value]="dateValueTo()"
+              (input)="onDateValueToInput($event)"
+            />
+          </div>
+        }
+      }
+
+      <!-- SET FILTER -->
+      @case ('set') {
+        <div class="filter-set-list">
+          @for (val of setFilterValues(); track val) {
+            <label class="filter-set-item">
+              <input
+                type="checkbox"
+                [checked]="isSetValueSelected(val)"
+                (change)="toggleSetValue(val)"
+              />
+              <span>{{ val }}</span>
+            </label>
+          }
+          @if (setFilterValues().length === 0) {
+            <span class="filter-set-empty">{{ locale().noValuesAvailable }}</span>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="filter-menu-footer">
+    <button class="filter-btn filter-btn-clear" (click)="clear()">{{ locale().clearFilter }}</button>
+    <button class="filter-btn filter-btn-apply" [disabled]="!canApply()" (click)="apply()">
+      {{ locale().applyFilter }}
+    </button>
+  </div>
+</div>
