@@ -108,6 +108,7 @@ export class App {
   readonly activeLocale = signal<'en' | 'uk'>('en');
   readonly expansionEnabled = signal(true);
   readonly paginationEnabled = signal(true);
+  readonly columnResizeEnabled = signal(true);
 
   // ── Code example state
   readonly activeExample = signal('basicSetup');
@@ -132,6 +133,7 @@ export class App {
     theme: this.activeTheme(),
     rowSelection: 'multi',
     rowExpansion: { enabled: this.expansionEnabled() },
+    enableColumnResize: this.columnResizeEnabled(),
     getRowId: (row: Employee) => row.id,
     locale: this.activeLocale() === 'en' ? EN_LOCALE : UK_LOCALE,
   }));
@@ -181,6 +183,7 @@ export class App {
     { key: 'filterTypes', label: 'Filters', hasHtml: false },
     { key: 'cellRenderers', label: 'Cell Renderers', hasHtml: true },
     { key: 'rowExpansion', label: 'Row Expansion', hasHtml: true },
+    { key: 'columnResize', label: 'Col Resize', hasHtml: false },
     { key: 'gridApi', label: 'Grid API', hasHtml: false },
     { key: 'themes', label: 'Themes & Locale', hasHtml: false },
   ];
@@ -606,6 +609,25 @@ this.api.selectedRowIds();             // → Signal<Set<any>>
 // ━━ Reset ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 this.api.resetAll();   // clears filters + sort, navigates to page 1`,
+    },
+
+    columnResize: {
+      ts: `// ── Enable globally via DvGridOptions ──────────────────────
+gridOptions: DvGridOptions = {
+  enableColumnResize: true,
+};
+
+// ── Opt individual columns out with resizable: false ───────
+columnDefs: DvColDef<Employee>[] = [
+  { field: 'id',   width: 60, resizable: false }, // fixed — no handle
+  { field: 'name', sortable: true, filter: 'text' }, // resizable (default)
+  { field: 'email', minWidth: 120 },  // resizable, but never narrower than 120px
+];
+
+// ── Per-column resizable flag summary ──────────────────────
+// resizable: undefined  → follows enableColumnResize option
+// resizable: true       → always resizable (even if option is false)
+// resizable: false      → never resizable`,
     },
 
     themes: {

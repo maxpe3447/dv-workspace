@@ -63,6 +63,15 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   readonly tooltipPos = signal<{ top: number; left: number }>({ top: 0, left: 0 });
   private tooltipTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // ── Column resize state
+  private resizingField: string | null = null;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
+  private resizeDelta = 0;
+  private wasResized = false;
+  readonly isResizing = signal(false);
+  readonly columnWidths = signal<Map<string, number>>(new Map());
+
   // Computed
   readonly themeClass = computed(() => {
     const theme = this.options().theme;
@@ -80,6 +89,8 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   readonly selectionMode = computed(() => this.options().rowSelection ?? null);
 
   readonly rowExpansionEnabled = computed(() => !!this.options().rowExpansion?.enabled);
+
+  readonly columnResizeEnabled = computed(() => this.options().enableColumnResize === true);
 
   readonly totalColspan = computed(
     () =>
@@ -124,9 +135,47 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     this.serverDataRequested.emit(this.gridApi.buildRequestParams());
   }
 
+  // ======================== Column resize ========================
+
+  getColumnWidth(col: DvColDef): number | null {
+    return this.columnWidths().get(col.field) ?? col.width ?? null;
+  }
+
+  onResizeStart(event: MouseEvent, col: DvColDef): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const th = (event.currentTarget as HTMLElement).closest('th') as HTMLElement;
+    this.resizingField = col.field;
+    this.resizeStartX = event.clientX;
+    this.resizeStartWidth = th.offsetWidth;
+    this.resizeDelta = 0;
+    this.wasResized = false;
+    this.isResizing.set(true);
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocumentMouseMove(event: MouseEvent): void {
+    if (!this.resizingField) return;
+    this.resizeDelta = event.clientX - this.resizeStartX;
+    const col = this.columnDefs().find(c => c.field === this.resizingField);
+    const minW = col?.minWidth ?? 50;
+    const newWidth = Math.max(minW, this.resizeStartWidth + this.resizeDelta);
+    this.columnWidths.update(map => new Map(map).set(this.resizingField!, newWidth));
+  }
+
+  @HostListener('document:mouseup')
+  onDocumentMouseUp(): void {
+    if (this.resizingField) {
+      this.wasResized = Math.abs(this.resizeDelta) > 3;
+      this.resizingField = null;
+      this.isResizing.set(false);
+    }
+  }
+
   // ======================== Sort ========================
 
   onHeaderClick(col: DvColDef): void {
+    if (this.wasResized) { this.wasResized = false; return; }
     if (col.sortable === false) return;
     this.gridApi.toggleSort(col.field);
   }

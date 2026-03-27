@@ -1,4 +1,4 @@
-<div class="my-data-grid" [class]="themeClass()">
+<div class="my-data-grid" [class]="themeClass()" [class.is-resizing]="isResizing()">
   <!-- Table -->
   <div class="grid-wrapper">
     <table class="grid-table">
@@ -23,11 +23,12 @@
           @for (col of columnDefs(); track col.field) {
             <th
               class="grid-header-cell"
-              [style.width.px]="col.width"
+              [style.width.px]="getColumnWidth(col)"
               [style.minWidth.px]="col.minWidth"
               [class.sortable]="col.sortable !== false"
               [class.sorted]="getSortDirection(col.field) !== null"
               [class.filtered]="hasActiveFilter(col.field)"
+              [class.resizable]="columnResizeEnabled() && col.resizable !== false"
               (click)="onHeaderClick(col)"
             >
               <div class="header-content">
@@ -79,6 +80,10 @@
                   }
                 </div>
               </div>
+
+              @if (columnResizeEnabled() && col.resizable !== false) {
+                <div class="resize-handle" (mousedown)="onResizeStart($event, col)"></div>
+              }
             </th>
           }
         </tr>

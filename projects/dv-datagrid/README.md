@@ -420,6 +420,34 @@ readonly detailTpl = viewChild.required<TemplateRef<any>>('detailTpl');
 
 ---
 
+## Column resizing
+
+Enable interactive column resizing by dragging the handle on the right edge of any header cell.
+
+```ts
+options: DvGridOptions = {
+  enableColumnResize: true,
+};
+```
+
+Columns are resizable by default when the option is enabled. Opt individual columns out with `resizable: false`:
+
+```ts
+columnDefs: DvColDef<Order>[] = [
+  { field: 'id',    width: 60,  resizable: false }, // fixed width, no handle
+  { field: 'name',  minWidth: 100 },                // resizable, min 100px
+  { field: 'email' },                               // resizable (default)
+];
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `enableColumnResize` (options) | `boolean` | Enable resize handles on all columns (default: `false`) |
+| `resizable` (colDef) | `boolean` | Per-column override — opt in/out regardless of global option |
+| `minWidth` (colDef) | `number` | Minimum column width in px when resizing (default: `50`) |
+
+---
+
 ## Cell renderers
 
 ### Component renderer

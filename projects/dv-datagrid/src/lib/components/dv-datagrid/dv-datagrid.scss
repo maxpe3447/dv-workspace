@@ -149,6 +149,36 @@
           }
         }
 
+        // Resize handle
+        .resize-handle {
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: 5px;
+          height: 100%;
+          cursor: col-resize;
+          z-index: 2;
+
+          &::after {
+            content: '';
+            position: absolute;
+            right: 1px;
+            top: 20%;
+            height: 60%;
+            width: 2px;
+            background: var(--header-border);
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.15s;
+          }
+        }
+
+        &.resizable:hover .resize-handle::after,
+        .resize-handle:hover::after {
+          opacity: 1;
+          background: var(--accent-color);
+        }
+
         &.sortable {
           cursor: pointer;
 
@@ -320,6 +350,14 @@
     --accent-color: #1976d2;
     --cell-border: #e0e0e0;
     --border-radius: 4px;
+  }
+
+  // ====================== Resizing ======================
+  &.is-resizing {
+    cursor: col-resize;
+    user-select: none;
+
+    * { cursor: col-resize !important; }
   }
 
   // ====================== Scrollbar ======================

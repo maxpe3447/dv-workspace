@@ -174,18 +174,30 @@ declare class DvDataGrid<T extends object = object> implements OnInit, OnDestroy
         left: number;
     }>;
     private tooltipTimer;
+    private resizingField;
+    private resizeStartX;
+    private resizeStartWidth;
+    private resizeDelta;
+    private wasResized;
+    readonly isResizing: _angular_core.WritableSignal<boolean>;
+    readonly columnWidths: _angular_core.WritableSignal<Map<string, number>>;
     readonly themeClass: Signal<string>;
     readonly paginationEnabled: Signal<boolean>;
     readonly pageSizeOptions: Signal<number[]>;
     readonly selectionEnabled: Signal<boolean>;
     readonly selectionMode: Signal<"single" | "multi" | null>;
     readonly rowExpansionEnabled: Signal<boolean>;
+    readonly columnResizeEnabled: Signal<boolean>;
     readonly totalColspan: Signal<number>;
     readonly locale: Signal<DvGridLocale>;
     readonly headerCheckboxState: Signal<"some" | "all" | "none">;
     constructor();
     ngOnInit(): void;
     loadServerData(): void;
+    getColumnWidth(col: DvColDef): number | null;
+    onResizeStart(event: MouseEvent, col: DvColDef): void;
+    onDocumentMouseMove(event: MouseEvent): void;
+    onDocumentMouseUp(): void;
     onHeaderClick(col: DvColDef): void;
     getSortDirection(field: string): 'asc' | 'desc' | null;
     getFilterType(col: DvColDef): FilterType | null;
@@ -295,3 +307,4 @@ declare class DvDataGridFilterMenu implements OnInit {
 
 export { DvDataGrid, DvDataGridFilterMenu, DvDataGridPagination, EN_LOCALE, UK_LOCALE };
 export type { CellClassParams, DateFilter, DateFilterOperator, DvColDef, DvGridApi, DvGridLocale, DvGridOptions, FilterInstance, FilterModel, FilterType, NumberFilter, NumberFilterOperator, ServerRequestParams, SetFilter, SortDirection, SortItem, TextFilter, TextFilterOperator };
+//# sourceMappingURL=dv-datagrid.d.ts.map

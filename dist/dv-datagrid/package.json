@@ -34,5 +34,8 @@
       "default": "./fesm2022/dv-datagrid.mjs"
     }
   },
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "prepublishOnly": "node --eval \"console.error('ERROR: Trying to publish a package that has been compiled in full compilation mode. This is not allowed.\\nPlease delete and rebuild the package with partial compilation mode, before attempting to publish.\\n')\" && exit 1"
+  }
 }
