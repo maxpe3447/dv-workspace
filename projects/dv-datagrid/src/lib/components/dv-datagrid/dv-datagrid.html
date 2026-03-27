@@ -20,7 +20,7 @@
               />
             </th>
           }
-          @for (col of columnDefs(); track col.field) {
+          @for (col of columnDefs(); track col.colId ?? col.field) {
             <th
               class="grid-header-cell"
               [style.width.px]="getColumnWidth(col)"
@@ -137,7 +137,7 @@
                   />
                 </td>
               }
-              @for (col of columnDefs(); track col.field) {
+              @for (col of columnDefs(); track col.colId ?? col.field) {
                 <td
                   class="grid-cell"
                   (mouseenter)="onCellMouseEnter($event, col, row, $index)"
@@ -209,7 +209,7 @@
 
 <!-- Filter dropdown rendered OUTSIDE the grid to avoid overflow clipping -->
 @if (openFilterField() !== null) {
-  @for (col of columnDefs(); track col.field) {
+  @for (col of columnDefs(); track col.colId ?? col.field) {
     @if (openFilterField() === col.field) {
       <dv-datagrid-filter-menu
         [filterType]="getFilterType(col)!"

@@ -284,6 +284,7 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
 
   onRowClick(event: MouseEvent, row: T, index: number): void {
     if (!this.selectionEnabled()) return;
+    if ((event.target as HTMLElement).closest('button, a, input, select, textarea')) return;
     const id = this.getRowId(row, index);
     if (this.selectionMode() === 'single') {
       if (this.gridApi.isRowSelected(id)) {

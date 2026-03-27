@@ -191,7 +191,9 @@ export class App {
   readonly currentExample = computed(
     () => this.exampleList.find((e) => e.key === this.activeExample()) ?? null,
   );
-
+click(id:number){
+console.log("id: "+id);
+}
   readonly currentCode = computed(() => {
     const ex = this.examples[this.activeExample()];
     if (!ex) return '';

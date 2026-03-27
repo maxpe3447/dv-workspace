@@ -13,6 +13,7 @@ export type FilterType = 'text' | 'number' | 'date' | 'set';
 
 export interface DvColDef<T = any> {
   field: string;
+  colId?: string;
   headerName?: string;
   sortable?: boolean;
   filter?: boolean | FilterType;
