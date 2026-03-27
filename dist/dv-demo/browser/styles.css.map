@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["projects/dv-demo/src/styles.scss"],
-  "sourcesContent": ["*, *::before, *::after { box-sizing: border-box; }\r\nhtml, body { margin: 0; padding: 0; height: 100%; }\r\nbody {\r\n  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;\r\n  background: #f1f5f9;\r\n  color: #1e293b;\r\n}\r\n"],
-  "mappings": ";AAAA;AAAA,CAAA;AAAA,CAAA;AAAyB,cAAA;;AACzB;AAAA;AAAa,UAAA;AAAW,WAAA;AAAY,UAAA;;AACpC;AACE;IAAA,aAAA;IAAA,kBAAA;IAAA,UAAA;IAAA,SAAA;IAAA;AACA,cAAA;AACA,SAAA;;",
-  "names": []
-}
