@@ -19,7 +19,6 @@ export interface DvColDef<T = any> {
   filter?: boolean | FilterType;
   filterValues?: any[];
   width?: number;
-  minWidth?: number;
   resizable?: boolean;
   valueFormatter?: (param: any) => any;
   cellClass?: string | ((params: CellClassParams<T>) => string);

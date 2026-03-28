@@ -24,7 +24,6 @@
             <th
               class="grid-header-cell"
               [style.width.px]="getColumnWidth(col)"
-              [style.minWidth.px]="col.minWidth"
               [class.sortable]="col.sortable !== false"
               [class.sorted]="getSortDirection(col.field) !== null"
               [class.filtered]="hasActiveFilter(col.field)"
@@ -82,7 +81,7 @@
               </div>
 
               @if (columnResizeEnabled() && col.resizable !== false) {
-                <div class="resize-handle" (mousedown)="onResizeStart($event, col)"></div>
+                <div class="resize-handle" (mousedown)="onResizeStart($event, col)" (click)="$event.stopPropagation()" (dblclick)="onResizeFit($event, col)"></div>
               }
             </th>
           }

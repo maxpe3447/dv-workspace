@@ -170,9 +170,9 @@ export class App {
 
   // ── Theme options for sidebar
   readonly themes: { value: 'alpine' | 'material' | 'dark'; label: string }[] = [
-    { value: 'alpine',   label: 'Alpine'   },
+    { value: 'alpine', label: 'Alpine' },
     { value: 'material', label: 'Material' },
-    { value: 'dark',     label: 'Dark'     },
+    { value: 'dark', label: 'Dark' },
   ];
 
   // ── Example tabs list
@@ -191,9 +191,9 @@ export class App {
   readonly currentExample = computed(
     () => this.exampleList.find((e) => e.key === this.activeExample()) ?? null,
   );
-click(id:number){
-console.log("id: "+id);
-}
+  click(id: number) {
+    console.log('id: ' + id);
+  }
   readonly currentCode = computed(() => {
     const ex = this.examples[this.activeExample()];
     if (!ex) return '';
@@ -719,7 +719,7 @@ interface DvGridLocale {
         headerName: 'Name',
         sortable: true,
         filter: 'text',
-        tooltipField: 'email',
+        tooltipField: 'email'
       },
       {
         field: 'department',
@@ -798,8 +798,7 @@ interface DvGridLocale {
   onServerDataRequested(params: ServerRequestParams): void {
     setTimeout(() => {
       let data = [...this.allData];
-
-      // Apply filters
+            // Apply filters
       for (const field of Object.keys(params.filterModel)) {
         const filter = params.filterModel[field] as FilterInstance;
         data = data.filter((row: any) => {

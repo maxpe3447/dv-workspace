@@ -158,7 +158,7 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     if (!this.resizingField) return;
     this.resizeDelta = event.clientX - this.resizeStartX;
     const col = this.columnDefs().find(c => c.field === this.resizingField);
-    const minW = col?.minWidth ?? 50;
+    const minW = 50;
     const newWidth = Math.max(minW, this.resizeStartWidth + this.resizeDelta);
     this.columnWidths.update(map => new Map(map).set(this.resizingField!, newWidth));
   }
@@ -170,6 +170,48 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
       this.resizingField = null;
       this.isResizing.set(false);
     }
+  }
+
+  onResizeFit(event: MouseEvent, col: DvColDef): void {
+    event.stopPropagation();
+    const th = (event.currentTarget as HTMLElement).closest('th') as HTMLElement;
+    const table = th.closest('table') as HTMLTableElement;
+    const colIndex = Array.from(th.parentElement!.children).indexOf(th);
+
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;white-space:nowrap;pointer-events:none';
+    document.body.appendChild(probe);
+
+    const measureCell = (el: HTMLElement): number => {
+      const s = window.getComputedStyle(el);
+      probe.style.fontFamily = s.fontFamily;
+      probe.style.fontSize = s.fontSize;
+      probe.style.fontWeight = s.fontWeight;
+      probe.style.letterSpacing = s.letterSpacing;
+      probe.textContent = el.textContent?.trim() ?? '';
+      return probe.offsetWidth + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight);
+    };
+
+    // Header: headerLabel is a flex child with overflow:hidden, so scrollWidth gives the full unclipped text width
+    const thStyle = window.getComputedStyle(th);
+    const headerLabel = th.querySelector('.header-label') as HTMLElement | null;
+    const headerActions = th.querySelector('.header-actions') as HTMLElement | null;
+    const headerWidth = (headerLabel?.scrollWidth ?? 0)
+      + (headerActions?.offsetWidth ?? 0)
+      + 4  // flex gap between label and actions
+      + parseFloat(thStyle.paddingLeft)
+      + parseFloat(thStyle.paddingRight)
+      + 10 // additional px for full header text view;
+
+    // Body cells
+    let maxWidth = headerWidth;
+    table.querySelectorAll<HTMLElement>('tbody tr').forEach(row => {
+      const cell = row.children[colIndex] as HTMLElement | undefined;
+      if (cell) maxWidth = Math.max(maxWidth, measureCell(cell));
+    });
+
+    document.body.removeChild(probe);
+    this.columnWidths.update(map => new Map(map).set(col.field, Math.ceil(maxWidth)));
   }
 
   // ======================== Sort ========================

@@ -167,8 +167,7 @@ interface DvColDef<T = any> {
   field: string;                      // dot-notation supported: 'address.city'
   headerName?: string;                // column header label
   sortable?: boolean;                 // default true
-  width?: number;                     // px
-  minWidth?: number;                  // px
+  width?: number;                     // fixed column width in px
 
   // Filtering
   filter?: boolean | 'text' | 'number' | 'date' | 'set';
@@ -435,7 +434,6 @@ Columns are resizable by default when the option is enabled. Opt individual colu
 ```ts
 columnDefs: DvColDef<Order>[] = [
   { field: 'id',    width: 60,  resizable: false }, // fixed width, no handle
-  { field: 'name',  minWidth: 100 },                // resizable, min 100px
   { field: 'email' },                               // resizable (default)
 ];
 ```
@@ -444,7 +442,6 @@ columnDefs: DvColDef<Order>[] = [
 |---|---|---|
 | `enableColumnResize` (options) | `boolean` | Enable resize handles on all columns (default: `false`) |
 | `resizable` (colDef) | `boolean` | Per-column override — opt in/out regardless of global option |
-| `minWidth` (colDef) | `number` | Minimum column width in px when resizing (default: `50`) |
 
 ---
 

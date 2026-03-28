@@ -34,6 +34,7 @@
   // ====================== TABLE ======================
   .grid-table {
     width: 100%;
+    min-width: max-content;
     border-collapse: collapse;
     table-layout: fixed;
 
@@ -64,7 +65,7 @@
         font-weight: var(--header-font-weight);
         color: var(--header-text);
         white-space: nowrap;
-        overflow: visible;
+        overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
         user-select: none;
