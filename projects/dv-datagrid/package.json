@@ -26,8 +26,7 @@
     "exceljs": "^4.4.0"
   },
   "dependencies": {
-    "tslib": "^2.3.0",
-    "exceljs": "^4.4.0"
+    "tslib": "^2.3.0"
   },
   "sideEffects": false
 }
