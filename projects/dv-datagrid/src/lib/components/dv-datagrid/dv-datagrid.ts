@@ -11,6 +11,7 @@ import {
   HostListener,
   TemplateRef,
 } from '@angular/core';
+import * as ExcelJS from 'exceljs';
 import { NgTemplateOutlet, NgComponentOutlet } from '@angular/common';
 import { DvColDef, FilterType, DvGridApi, DvGridOptions } from '../../models/grid.model';
 import { FilterInstance } from '../../models/filter.model';
@@ -133,6 +134,29 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   loadServerData(): void {
     this.gridApi.setLoading(true);
     this.serverDataRequested.emit(this.gridApi.buildRequestParams());
+  }
+
+  exportToExcel(): void {
+    const cols = this.columnDefs();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Sheet1');
+
+    ws.addRow(cols.map(col => col.headerName ?? col.field));
+    this.rowData().forEach(row =>
+      ws.addRow(cols.map(col =>
+        col.valueFormatter ? col.valueFormatter(row) : this.getValue(row, col.field)
+      ))
+    );
+
+    wb.xlsx.writeBuffer().then(buffer => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'export.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   }
 
   // ======================== Column resize ========================
