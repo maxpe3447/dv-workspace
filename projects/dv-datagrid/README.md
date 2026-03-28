@@ -714,6 +714,7 @@ const MY_LOCALE: GridLocale = {
   loading: 'Chargement...',
   noData: 'Aucune donnée',
   filterButtonTitle: 'Filtrer',
+  reload: 'Recharger',
   filterMenuTitle: 'Filtrer',
   operator: 'Opérateur',
   value: 'Valeur',

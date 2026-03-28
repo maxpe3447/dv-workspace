@@ -3,6 +3,7 @@ export interface DvGridLocale {
   loading: string;
   noData: string;
   filterButtonTitle: string;
+  reload: string;
 
   // filter menu
   filterMenuTitle: string;
@@ -47,6 +48,7 @@ export const EN_LOCALE: DvGridLocale = {
   loading: 'Loading...',
   noData: 'No data',
   filterButtonTitle: 'Filter',
+  reload: 'Reload',
 
   filterMenuTitle: 'Filter',
   operator: 'Operator',
@@ -86,6 +88,7 @@ export const UK_LOCALE: DvGridLocale = {
   loading: 'Завантаження...',
   noData: 'Немає даних',
   filterButtonTitle: 'Фільтр',
+  reload: 'Оновити',
 
   filterMenuTitle: 'Фільтр',
   operator: 'Оператор',

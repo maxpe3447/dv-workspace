@@ -361,6 +361,43 @@
     * { cursor: col-resize !important; }
   }
 
+  // ====================== FOOTER ======================
+  .grid-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--pagination-border);
+    background-color: var(--pagination-bg);
+
+    dv-datagrid-pagination {
+      flex: 1;
+    }
+  }
+
+  .reload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 6px 8px;
+    padding: 0;
+    border: 1px solid var(--pagination-border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--header-text);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s, background-color 0.15s;
+    flex-shrink: 0;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    svg { display: block; }
+  }
+
   // ====================== Scrollbar ======================
   .grid-wrapper::-webkit-scrollbar {
     height: 8px;
