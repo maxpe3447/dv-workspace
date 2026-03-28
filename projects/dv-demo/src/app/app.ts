@@ -135,7 +135,8 @@ export class App {
     rowExpansion: { enabled: this.expansionEnabled() },
     enableColumnResize: this.columnResizeEnabled(),
     getRowId: (row: Employee) => row.id,
-    locale: this.activeLocale() === 'en' ? EN_LOCALE : UK_LOCALE
+    locale: this.activeLocale() === 'en' ? EN_LOCALE : UK_LOCALE,
+    exportFileName: 'excel-export.xlsx'
   }));
 
   // ── Column definitions (assigned in ngOnInit after templates are available)

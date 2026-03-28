@@ -54,6 +54,7 @@ export interface DvGridOptions {
   locale?: Partial<DvGridLocale>;
   tooltipShowDelay?: number;
   rowExpansion?: { enabled: boolean };
+  exportFileName?: string;
 }
 
 export interface DvGridApi {

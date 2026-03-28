@@ -5,7 +5,8 @@ export class GridExportHandler {
   exportToExcel<T>(
     cols: DvColDef<T>[],
     rows: T[],
-    getValue: (row: T, field: string) => any
+    getValue: (row: T, field: string) => any,
+    exportFileName?: string
   ): void {
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('Sheet1');
@@ -24,7 +25,7 @@ export class GridExportHandler {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'export.xlsx';
+      a.download = exportFileName ?? 'export.xlsx';
       a.click();
       URL.revokeObjectURL(url);
     });
