@@ -1,4 +1,15 @@
-<div class="my-data-grid" [class]="themeClass()">
+<!-- SVG sprite — all icons defined once, referenced via <use> below -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="dv-sort-asc" viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></symbol>
+  <symbol id="dv-sort-desc" viewBox="0 0 24 24"><path d="M12 20l8-8h-5V4H9v8H4z"/></symbol>
+  <symbol id="dv-sort-none" viewBox="0 0 24 24"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></symbol>
+  <symbol id="dv-filter" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></symbol>
+  <symbol id="dv-expand" viewBox="0 0 24 24"><path d="M8 5l8 7-8 7z"/></symbol>
+  <symbol id="dv-reload" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+  <symbol id="dv-export" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+</svg>
+
+<div class="my-data-grid" [class]="themeClass()" [class.is-resizing]="isResizing()">
   <!-- Table -->
   <div class="grid-wrapper">
     <table class="grid-table">
@@ -20,14 +31,14 @@
               />
             </th>
           }
-          @for (col of columnDefs(); track col.field) {
+          @for (col of columnDefs(); track col.colId ?? col.field) {
             <th
               class="grid-header-cell"
-              [style.width.px]="col.width"
-              [style.minWidth.px]="col.minWidth"
+              [style.width.px]="getColumnWidth(col)"
               [class.sortable]="col.sortable !== false"
               [class.sorted]="getSortDirection(col.field) !== null"
               [class.filtered]="hasActiveFilter(col.field)"
+              [class.resizable]="columnResizeEnabled() && col.resizable !== false"
               (click)="onHeaderClick(col)"
             >
               <div class="header-content">
@@ -40,24 +51,17 @@
                       @switch (getSortDirection(col.field)) {
                         @case ('asc') {
                           <span class="sort-icon sort-asc">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 4l-8 8h5v8h6v-8h5z" />
-                            </svg>
+                            <svg width="14" height="14" fill="currentColor"><use href="#dv-sort-asc"/></svg>
                           </span>
                         }
                         @case ('desc') {
                           <span class="sort-icon sort-desc">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 20l8-8h-5V4H9v8H4z" />
-                            </svg>
+                            <svg width="14" height="14" fill="currentColor"><use href="#dv-sort-desc"/></svg>
                           </span>
                         }
                         @default {
                           <span class="sort-icon sort-none">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M7 10l5-5 5 5z" />
-                              <path d="M7 14l5 5 5-5z" />
-                            </svg>
+                            <svg width="14" height="14" fill="currentColor"><use href="#dv-sort-none"/></svg>
                           </span>
                         }
                       }
@@ -72,13 +76,15 @@
                       (click)="toggleFilterMenu($event, col.field)"
                       [title]="locale().filterButtonTitle"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                      </svg>
+                      <svg width="14" height="14" fill="currentColor"><use href="#dv-filter"/></svg>
                     </button>
                   }
                 </div>
               </div>
+
+              @if (columnResizeEnabled() && col.resizable !== false) {
+                <div class="resize-handle" (mousedown)="onResizeStart($event, col)" (click)="$event.stopPropagation()" (dblclick)="onResizeFit($event, col)"></div>
+              }
             </th>
           }
         </tr>
@@ -115,9 +121,7 @@
                     [class.expanded]="isRowExpanded(row, $index)"
                     (click)="onExpandToggle($event, row, $index)"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5l8 7-8 7z"/>
-                    </svg>
+                    <svg width="12" height="12" fill="currentColor"><use href="#dv-expand"/></svg>
                   </button>
                 </td>
               }
@@ -132,7 +136,7 @@
                   />
                 </td>
               }
-              @for (col of columnDefs(); track col.field) {
+              @for (col of columnDefs(); track col.colId ?? col.field) {
                 <td
                   class="grid-cell"
                   (mouseenter)="onCellMouseEnter($event, col, row, $index)"
@@ -179,18 +183,26 @@
     </table>
   </div>
 
-  <!-- PAGINATION -->
-  @if (paginationEnabled()) {
-    <dv-datagrid-pagination
-      [currentPage]="currentPage()"
-      [pageSize]="pageSize()"
-      [totalRecords]="totalRecords()"
-      [pageSizeOptions]="pageSizeOptions()"
-      [locale]="locale()"
-      (pageChanged)="onPageChanged($event)"
-      (pageSizeChanged)="onPageSizeChanged($event)"
-    />
-  }
+  <!-- FOOTER: pagination + reload -->
+  <div class="grid-footer">
+    @if (paginationEnabled()) {
+      <dv-datagrid-pagination
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        [totalRecords]="totalRecords()"
+        [pageSizeOptions]="pageSizeOptions()"
+        [locale]="locale()"
+        (pageChanged)="onPageChanged($event)"
+        (pageSizeChanged)="onPageSizeChanged($event)"
+      />
+    }
+    <button class="reload-btn" (click)="loadServerData()" [title]="locale().reload">
+      <svg width="14" height="14" fill="currentColor"><use href="#dv-reload"/></svg>
+    </button>
+    <button class="reload-btn" (click)="exportToExcel()" [title]="locale().exportExcel">
+      <svg width="14" height="14" fill="currentColor"><use href="#dv-export"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- Tooltip rendered OUTSIDE the grid to avoid overflow clipping -->
@@ -204,7 +216,7 @@
 
 <!-- Filter dropdown rendered OUTSIDE the grid to avoid overflow clipping -->
 @if (openFilterField() !== null) {
-  @for (col of columnDefs(); track col.field) {
+  @for (col of columnDefs(); track col.colId ?? col.field) {
     @if (openFilterField() === col.field) {
       <dv-datagrid-filter-menu
         [filterType]="getFilterType(col)!"

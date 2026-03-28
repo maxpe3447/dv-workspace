@@ -64,6 +64,10 @@
           <input type="checkbox" [checked]="paginationEnabled()" (change)="paginationEnabled.set(!paginationEnabled())">
           <span>Pagination</span>
         </label>
+        <label class="toggle-row">
+          <input type="checkbox" [checked]="columnResizeEnabled()" (change)="columnResizeEnabled.set(!columnResizeEnabled())">
+          <span>Column Resize</span>
+        </label>
       </div>
 
       <div class="sidebar-section">

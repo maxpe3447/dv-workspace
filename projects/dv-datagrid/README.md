@@ -167,8 +167,7 @@ interface DvColDef<T = any> {
   field: string;                      // dot-notation supported: 'address.city'
   headerName?: string;                // column header label
   sortable?: boolean;                 // default true
-  width?: number;                     // px
-  minWidth?: number;                  // px
+  width?: number;                     // fixed column width in px
 
   // Filtering
   filter?: boolean | 'text' | 'number' | 'date' | 'set';
@@ -417,6 +416,32 @@ readonly detailTpl = viewChild.required<TemplateRef<any>>('detailTpl');
   </div>
 </ng-template>
 ```
+
+---
+
+## Column resizing
+
+Enable interactive column resizing by dragging the handle on the right edge of any header cell.
+
+```ts
+options: DvGridOptions = {
+  enableColumnResize: true,
+};
+```
+
+Columns are resizable by default when the option is enabled. Opt individual columns out with `resizable: false`:
+
+```ts
+columnDefs: DvColDef<Order>[] = [
+  { field: 'id',    width: 60,  resizable: false }, // fixed width, no handle
+  { field: 'email' },                               // resizable (default)
+];
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `enableColumnResize` (options) | `boolean` | Enable resize handles on all columns (default: `false`) |
+| `resizable` (colDef) | `boolean` | Per-column override — opt in/out regardless of global option |
 
 ---
 
@@ -689,6 +714,7 @@ const MY_LOCALE: GridLocale = {
   loading: 'Chargement...',
   noData: 'Aucune donnée',
   filterButtonTitle: 'Filtrer',
+  reload: 'Recharger',
   filterMenuTitle: 'Filtrer',
   operator: 'Opérateur',
   value: 'Valeur',

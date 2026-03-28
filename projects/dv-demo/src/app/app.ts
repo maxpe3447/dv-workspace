@@ -108,6 +108,7 @@ export class App {
   readonly activeLocale = signal<'en' | 'uk'>('en');
   readonly expansionEnabled = signal(true);
   readonly paginationEnabled = signal(true);
+  readonly columnResizeEnabled = signal(true);
 
   // ── Code example state
   readonly activeExample = signal('basicSetup');
@@ -132,8 +133,10 @@ export class App {
     theme: this.activeTheme(),
     rowSelection: 'multi',
     rowExpansion: { enabled: this.expansionEnabled() },
+    enableColumnResize: this.columnResizeEnabled(),
     getRowId: (row: Employee) => row.id,
     locale: this.activeLocale() === 'en' ? EN_LOCALE : UK_LOCALE,
+    exportFileName: 'excel-export.xlsx'
   }));
 
   // ── Column definitions (assigned in ngOnInit after templates are available)
@@ -168,9 +171,9 @@ export class App {
 
   // ── Theme options for sidebar
   readonly themes: { value: 'alpine' | 'material' | 'dark'; label: string }[] = [
-    { value: 'alpine',   label: 'Alpine'   },
+    { value: 'alpine', label: 'Alpine' },
     { value: 'material', label: 'Material' },
-    { value: 'dark',     label: 'Dark'     },
+    { value: 'dark', label: 'Dark' },
   ];
 
   // ── Example tabs list
@@ -181,6 +184,7 @@ export class App {
     { key: 'filterTypes', label: 'Filters', hasHtml: false },
     { key: 'cellRenderers', label: 'Cell Renderers', hasHtml: true },
     { key: 'rowExpansion', label: 'Row Expansion', hasHtml: true },
+    { key: 'columnResize', label: 'Col Resize', hasHtml: false },
     { key: 'gridApi', label: 'Grid API', hasHtml: false },
     { key: 'themes', label: 'Themes & Locale', hasHtml: false },
   ];
@@ -188,7 +192,9 @@ export class App {
   readonly currentExample = computed(
     () => this.exampleList.find((e) => e.key === this.activeExample()) ?? null,
   );
-
+  click(id: number) {
+    console.log('id: ' + id);
+  }
   readonly currentCode = computed(() => {
     const ex = this.examples[this.activeExample()];
     if (!ex) return '';
@@ -608,6 +614,25 @@ this.api.selectedRowIds();             // → Signal<Set<any>>
 this.api.resetAll();   // clears filters + sort, navigates to page 1`,
     },
 
+    columnResize: {
+      ts: `// ── Enable globally via DvGridOptions ──────────────────────
+gridOptions: DvGridOptions = {
+  enableColumnResize: true,
+};
+
+// ── Opt individual columns out with resizable: false ───────
+columnDefs: DvColDef<Employee>[] = [
+  { field: 'id',   width: 60, resizable: false }, // fixed — no handle
+  { field: 'name', sortable: true, filter: 'text' }, // resizable (default)
+  { field: 'email', minWidth: 120 },  // resizable, but never narrower than 120px
+];
+
+// ── Per-column resizable flag summary ──────────────────────
+// resizable: undefined  → follows enableColumnResize option
+// resizable: true       → always resizable (even if option is false)
+// resizable: false      → never resizable`,
+    },
+
     themes: {
       ts: `import { EN_LOCALE, UK_LOCALE, DvGridLocale } from 'dv-datagrid';
 
@@ -695,7 +720,7 @@ interface DvGridLocale {
         headerName: 'Name',
         sortable: true,
         filter: 'text',
-        tooltipField: 'email',
+        tooltipField: 'email'
       },
       {
         field: 'department',
@@ -774,8 +799,7 @@ interface DvGridLocale {
   onServerDataRequested(params: ServerRequestParams): void {
     setTimeout(() => {
       let data = [...this.allData];
-
-      // Apply filters
+            // Apply filters
       for (const field of Object.keys(params.filterModel)) {
         const filter = params.filterModel[field] as FilterInstance;
         data = data.filter((row: any) => {

@@ -13,12 +13,12 @@ export type FilterType = 'text' | 'number' | 'date' | 'set';
 
 export interface DvColDef<T = any> {
   field: string;
+  colId?: string;
   headerName?: string;
   sortable?: boolean;
   filter?: boolean | FilterType;
   filterValues?: any[];
   width?: number;
-  minWidth?: number;
   resizable?: boolean;
   valueFormatter?: (param: any) => any;
   cellClass?: string | ((params: CellClassParams<T>) => string);
@@ -54,6 +54,7 @@ export interface DvGridOptions {
   locale?: Partial<DvGridLocale>;
   tooltipShowDelay?: number;
   rowExpansion?: { enabled: boolean };
+  exportFileName?: string;
 }
 
 export interface DvGridApi {

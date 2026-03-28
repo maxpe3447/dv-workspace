@@ -34,6 +34,7 @@
   // ====================== TABLE ======================
   .grid-table {
     width: 100%;
+    min-width: max-content;
     border-collapse: collapse;
     table-layout: fixed;
 
@@ -44,7 +45,7 @@
       z-index: 10;
 
       th.expansion-header {
-        width: 36px;
+        width: 45px;
         min-width: 36px;
         cursor: default;
       }
@@ -64,7 +65,7 @@
         font-weight: var(--header-font-weight);
         color: var(--header-text);
         white-space: nowrap;
-        overflow: visible;
+        overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
         user-select: none;
@@ -147,6 +148,36 @@
             opacity: 1;
             color: var(--accent-color);
           }
+        }
+
+        // Resize handle
+        .resize-handle {
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: 5px;
+          height: 100%;
+          cursor: col-resize;
+          z-index: 2;
+
+          &::after {
+            content: '';
+            position: absolute;
+            right: 1px;
+            top: 20%;
+            height: 60%;
+            width: 2px;
+            background: var(--header-border);
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.15s;
+          }
+        }
+
+        &.resizable:hover .resize-handle::after,
+        .resize-handle:hover::after {
+          opacity: 1;
+          background: var(--accent-color);
         }
 
         &.sortable {
@@ -320,6 +351,51 @@
     --accent-color: #1976d2;
     --cell-border: #e0e0e0;
     --border-radius: 4px;
+  }
+
+  // ====================== Resizing ======================
+  &.is-resizing {
+    cursor: col-resize;
+    user-select: none;
+
+    * { cursor: col-resize !important; }
+  }
+
+  // ====================== FOOTER ======================
+  .grid-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--pagination-border);
+    background-color: var(--pagination-bg);
+
+    dv-datagrid-pagination {
+      flex: 1;
+    }
+  }
+
+  .reload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 6px 8px;
+    padding: 0;
+    border: 1px solid var(--pagination-border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--header-text);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s, background-color 0.15s;
+    flex-shrink: 0;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    svg { display: block; }
   }
 
   // ====================== Scrollbar ======================
