@@ -1,6 +1,11 @@
 {
   "name": "dv-datagrid",
   "version": "1.0.0",
+  "homepage": "https://maxpe3447.github.io/dv-workspace/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxpe3447/dv-workspace"
+  },
   "license": "MIT",
   "keywords": [
     "angular",
