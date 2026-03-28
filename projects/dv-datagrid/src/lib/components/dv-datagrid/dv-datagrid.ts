@@ -3,7 +3,6 @@ import {
   input,
   output,
   computed,
-  signal,
   Signal,
   OnInit,
   OnDestroy,
@@ -11,7 +10,6 @@ import {
   HostListener,
   TemplateRef,
 } from '@angular/core';
-import * as ExcelJS from 'exceljs';
 import { NgTemplateOutlet, NgComponentOutlet } from '@angular/common';
 import { DvColDef, FilterType, DvGridApi, DvGridOptions } from '../../models/grid.model';
 import { FilterInstance } from '../../models/filter.model';
@@ -19,6 +17,11 @@ import { EN_LOCALE, DvGridLocale } from '../../models/locale.model';
 import { DvGridApiImpl } from '../../services/grid-api-impl';
 import { DvDataGridPagination } from '../dv-pagination/dv-pagination';
 import { DvDataGridFilterMenu } from '../dv-filter-menu/dv-filter-menu';
+import { GridColumnResizeHandler } from './handlers/column-resize.handler';
+import { GridTooltipHandler } from './handlers/tooltip.handler';
+import { GridFilterMenuHandler } from './handlers/filter-menu.handler';
+import { GridRowExpansionHandler } from './handlers/row-expansion.handler';
+import { GridExportHandler } from './handlers/export.handler';
 
 @Component({
   selector: 'dv-datagrid',
@@ -28,20 +31,35 @@ import { DvDataGridFilterMenu } from '../dv-filter-menu/dv-filter-menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy {
-  // Inputs
+  // ── Inputs / Outputs
   readonly columnDefs = input<DvColDef<T>[]>([]);
   readonly options = input<DvGridOptions>({});
   readonly detailTemplate = input<TemplateRef<{ $implicit: T; rowIndex: number }> | null>(null);
 
-  // Outputs
   readonly serverDataRequested = output<ReturnType<DvGridApiImpl['buildRequestParams']>>();
   readonly gridReady = output<DvGridApi>();
   readonly selectionChanged = output<any[]>();
 
-  // Internal API
+  // ── Internal API
   private readonly gridApi = new DvGridApiImpl();
 
-  // Expose signals from API for template binding
+  // ── Handlers
+  private readonly resize = new GridColumnResizeHandler();
+  private readonly tooltip = new GridTooltipHandler();
+  private readonly filterMenu = new GridFilterMenuHandler();
+  private readonly expansion = new GridRowExpansionHandler();
+  private readonly exporter = new GridExportHandler();
+
+  // ── Signals delegated from handlers (template binding)
+  readonly isResizing = this.resize.isResizing;
+  readonly columnWidths = this.resize.columnWidths;
+  readonly openFilterField = this.filterMenu.openField;
+  readonly filterMenuPos = this.filterMenu.menuPos;
+  readonly expandedRowIds = this.expansion.expandedRowIds;
+  readonly tooltipText = this.tooltip.tooltipText;
+  readonly tooltipPos = this.tooltip.tooltipPos;
+
+  // ── Signals delegated from API (template binding)
   readonly rowData: Signal<T[]> = this.gridApi.rowData as Signal<T[]>;
   readonly isLoading = this.gridApi.isLoading;
   readonly sortModel = this.gridApi.sortModel;
@@ -52,55 +70,25 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   readonly totalPages = this.gridApi.totalPages;
   readonly selectedRowIds = this.gridApi.selectedRowIds;
 
-  // Filter menu state
-  readonly openFilterField = signal<string | null>(null);
-  readonly filterMenuPos = signal<{ top: number; left: number }>({ top: 0, left: 0 });
-
-  // Row expansion state
-  readonly expandedRowIds = signal<Set<any>>(new Set<any>());
-
-  // Tooltip state
-  readonly tooltipText = signal<string | null>(null);
-  readonly tooltipPos = signal<{ top: number; left: number }>({ top: 0, left: 0 });
-  private tooltipTimer: ReturnType<typeof setTimeout> | null = null;
-
-  // ── Column resize state
-  private resizingField: string | null = null;
-  private resizeStartX = 0;
-  private resizeStartWidth = 0;
-  private resizeDelta = 0;
-  private wasResized = false;
-  readonly isResizing = signal(false);
-  readonly columnWidths = signal<Map<string, number>>(new Map());
-
-  // Computed
+  // ── Computed
   readonly themeClass = computed(() => {
     const theme = this.options().theme;
     return theme && theme !== 'custom' ? `my-data-grid-theme-${theme}` : '';
   });
 
   readonly paginationEnabled = computed(() => this.options().pagination !== false);
-
-  readonly pageSizeOptions = computed(
-    () => this.options().paginationPageSizeOptions ?? [10, 20, 50, 100]
-  );
-
+  readonly pageSizeOptions = computed(() => this.options().paginationPageSizeOptions ?? [10, 20, 50, 100]);
   readonly selectionEnabled = computed(() => !!this.options().rowSelection);
-
   readonly selectionMode = computed(() => this.options().rowSelection ?? null);
-
   readonly rowExpansionEnabled = computed(() => !!this.options().rowExpansion?.enabled);
-
   readonly columnResizeEnabled = computed(() => this.options().enableColumnResize === true);
-
-  readonly totalColspan = computed(
-    () =>
-      this.columnDefs().length +
-      (this.selectionMode() === 'multi' ? 1 : 0) +
-      (this.rowExpansionEnabled() ? 1 : 0)
-  );
-
   readonly locale = computed<DvGridLocale>(() => ({ ...EN_LOCALE, ...this.options().locale }));
+
+  readonly totalColspan = computed(() =>
+    this.columnDefs().length +
+    (this.selectionMode() === 'multi' ? 1 : 0) +
+    (this.rowExpansionEnabled() ? 1 : 0)
+  );
 
   readonly headerCheckboxState = computed<'all' | 'some' | 'none'>(() => {
     if (!this.selectionEnabled()) return 'none';
@@ -108,7 +96,7 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     if (rows.length === 0) return 'none';
     const selected = this.selectedRowIds();
     const visibleIds = rows.map((row, i) => this.getRowId(row, i));
-    const selectedCount = visibleIds.filter((id) => selected.has(id)).length;
+    const selectedCount = visibleIds.filter(id => selected.has(id)).length;
     if (selectedCount === 0) return 'none';
     if (selectedCount === visibleIds.length) return 'all';
     return 'some';
@@ -120,16 +108,19 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
 
   ngOnInit(): void {
     const opts = this.options();
-
     if (opts.paginationPageSize && opts.paginationPageSize > 0) {
       this.gridApi.setInitialPageSize(opts.paginationPageSize);
     }
-
     this.gridApi.setSelectionMode(opts.rowSelection ?? null);
-
     this.gridReady.emit(this.gridApi);
     this.loadServerData();
   }
+
+  ngOnDestroy(): void {
+    this.tooltip.destroy();
+  }
+
+  // ======================== Data ========================
 
   loadServerData(): void {
     this.gridApi.setLoading(true);
@@ -137,118 +128,43 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   }
 
   exportToExcel(): void {
-    const cols = this.columnDefs();
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('Sheet1');
-
-    ws.addRow(cols.map(col => col.headerName ?? col.field));
-    this.rowData().forEach(row =>
-      ws.addRow(cols.map(col =>
-        col.valueFormatter ? col.valueFormatter(row) : this.getValue(row, col.field)
-      ))
-    );
-
-    wb.xlsx.writeBuffer().then(buffer => {
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'export.xlsx';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    this.exporter.exportToExcel(this.columnDefs(), this.rowData(), this.getValue.bind(this));
   }
 
   // ======================== Column resize ========================
 
   getColumnWidth(col: DvColDef): number | null {
-    return this.columnWidths().get(col.field) ?? col.width ?? null;
+    return this.resize.getColumnWidth(col);
   }
 
   onResizeStart(event: MouseEvent, col: DvColDef): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const th = (event.currentTarget as HTMLElement).closest('th') as HTMLElement;
-    this.resizingField = col.field;
-    this.resizeStartX = event.clientX;
-    this.resizeStartWidth = th.offsetWidth;
-    this.resizeDelta = 0;
-    this.wasResized = false;
-    this.isResizing.set(true);
+    this.resize.onResizeStart(event, col);
   }
 
   @HostListener('document:mousemove', ['$event'])
   onDocumentMouseMove(event: MouseEvent): void {
-    if (!this.resizingField) return;
-    this.resizeDelta = event.clientX - this.resizeStartX;
-    const col = this.columnDefs().find(c => c.field === this.resizingField);
-    const minW = 50;
-    const newWidth = Math.max(minW, this.resizeStartWidth + this.resizeDelta);
-    this.columnWidths.update(map => new Map(map).set(this.resizingField!, newWidth));
+    this.resize.onMouseMove(event);
   }
 
   @HostListener('document:mouseup')
   onDocumentMouseUp(): void {
-    if (this.resizingField) {
-      this.wasResized = Math.abs(this.resizeDelta) > 3;
-      this.resizingField = null;
-      this.isResizing.set(false);
-    }
+    this.resize.onMouseUp();
   }
 
   onResizeFit(event: MouseEvent, col: DvColDef): void {
-    event.stopPropagation();
-    const th = (event.currentTarget as HTMLElement).closest('th') as HTMLElement;
-    const table = th.closest('table') as HTMLTableElement;
-    const colIndex = Array.from(th.parentElement!.children).indexOf(th);
-
-    const probe = document.createElement('span');
-    probe.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;white-space:nowrap;pointer-events:none';
-    document.body.appendChild(probe);
-
-    const measureCell = (el: HTMLElement): number => {
-      const s = window.getComputedStyle(el);
-      probe.style.fontFamily = s.fontFamily;
-      probe.style.fontSize = s.fontSize;
-      probe.style.fontWeight = s.fontWeight;
-      probe.style.letterSpacing = s.letterSpacing;
-      probe.textContent = el.textContent?.trim() ?? '';
-      return probe.offsetWidth + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight);
-    };
-
-    // Header: headerLabel is a flex child with overflow:hidden, so scrollWidth gives the full unclipped text width
-    const thStyle = window.getComputedStyle(th);
-    const headerLabel = th.querySelector('.header-label') as HTMLElement | null;
-    const headerActions = th.querySelector('.header-actions') as HTMLElement | null;
-    const headerWidth = (headerLabel?.scrollWidth ?? 0)
-      + (headerActions?.offsetWidth ?? 0)
-      + 4  // flex gap between label and actions
-      + parseFloat(thStyle.paddingLeft)
-      + parseFloat(thStyle.paddingRight)
-      + 10 // additional px for full header text view;
-
-    // Body cells
-    let maxWidth = headerWidth;
-    table.querySelectorAll<HTMLElement>('tbody tr').forEach(row => {
-      const cell = row.children[colIndex] as HTMLElement | undefined;
-      if (cell) maxWidth = Math.max(maxWidth, measureCell(cell));
-    });
-
-    document.body.removeChild(probe);
-    this.columnWidths.update(map => new Map(map).set(col.field, Math.ceil(maxWidth)));
+    this.resize.onResizeFit(event, col);
   }
 
   // ======================== Sort ========================
 
   onHeaderClick(col: DvColDef): void {
-    if (this.wasResized) { this.wasResized = false; return; }
+    if (this.resize.wasResized) { this.resize.clearWasResized(); return; }
     if (col.sortable === false) return;
     this.gridApi.toggleSort(col.field);
   }
 
   getSortDirection(field: string): 'asc' | 'desc' | null {
-    const item = this.sortModel().find((s) => s.colId === field);
-    return item?.sort ?? null;
+    return this.sortModel().find(s => s.colId === field)?.sort ?? null;
   }
 
   // ======================== Filter ========================
@@ -272,43 +188,26 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   }
 
   toggleFilterMenu(event: MouseEvent, field: string): void {
-    event.stopPropagation();
-    if (this.openFilterField() === field) {
-      this.openFilterField.set(null);
-      return;
-    }
-    // Position the dropdown below the trigger button
-    const btn = event.currentTarget as HTMLElement;
-    const rect = btn.getBoundingClientRect();
-    const menuWidth = 240;
-    // Prefer left-aligned, but flip to right-aligned if it would overflow viewport
-    let left = rect.left;
-    if (left + menuWidth > window.innerWidth) {
-      left = rect.right - menuWidth;
-    }
-    this.filterMenuPos.set({ top: rect.bottom + 4, left });
-    this.openFilterField.set(field);
+    this.filterMenu.toggle(event, field);
   }
 
   onFilterApplied(field: string, filter: FilterInstance): void {
     this.gridApi.setColumnFilter(field, filter);
-    this.openFilterField.set(null);
+    this.filterMenu.close();
   }
 
   onFilterCleared(field: string): void {
     this.gridApi.clearColumnFilter(field);
-    this.openFilterField.set(null);
+    this.filterMenu.close();
   }
 
   onFilterMenuClosed(): void {
-    this.openFilterField.set(null);
+    this.filterMenu.close();
   }
 
   @HostListener('document:click')
   onDocumentClick(): void {
-    if (this.openFilterField() !== null) {
-      this.openFilterField.set(null);
-    }
+    this.filterMenu.close();
   }
 
   // ======================== Pagination ========================
@@ -332,10 +231,9 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   }
 
   onHeaderCheckboxChange(): void {
-    const rows = this.rowData();
-    const visibleIds = rows.map((row, i) => this.getRowId(row, i));
+    const visibleIds = this.rowData().map((row, i) => this.getRowId(row, i));
     if (this.headerCheckboxState() === 'all') {
-      visibleIds.forEach((id) => this.gridApi.deselectRow(id));
+      visibleIds.forEach(id => this.gridApi.deselectRow(id));
     } else {
       this.gridApi.selectAll(visibleIds);
     }
@@ -354,105 +252,53 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     if ((window.getSelection()?.toString().length ?? 0) > 0) return;
     const id = this.getRowId(row, index);
     if (this.selectionMode() === 'single') {
-      if (this.gridApi.isRowSelected(id)) {
-        this.gridApi.deselectRow(id);
-      } else {
-        this.gridApi.selectRow(id);
-      }
-      this.emitSelectionChanged();
+      this.gridApi.isRowSelected(id) ? this.gridApi.deselectRow(id) : this.gridApi.selectRow(id);
     } else if (this.selectionMode() === 'multi') {
       this.gridApi.toggleRowSelection(id);
-      this.emitSelectionChanged();
     }
+    this.emitSelectionChanged();
   }
 
   private emitSelectionChanged(): void {
     this.selectionChanged.emit(Array.from(this.selectedRowIds()));
   }
 
-  // ======================== Value accessor ========================
+  // ======================== Row expansion ========================
+
+  isRowExpanded(row: T, index: number): boolean {
+    return this.expansion.isExpanded(this.getRowId(row, index));
+  }
+
+  onExpandToggle(event: MouseEvent, row: T, index: number): void {
+    event.stopPropagation();
+    this.expansion.toggle(this.getRowId(row, index));
+  }
+
+  // ======================== Tooltip ========================
+
+  onCellMouseEnter(event: MouseEvent, col: DvColDef<T>, row: T, index: number): void {
+    this.tooltip.onCellMouseEnter(
+      event, col, row, index,
+      this.options().tooltipShowDelay ?? 500,
+      this.getValue.bind(this)
+    );
+  }
+
+  onCellMouseLeave(): void {
+    this.tooltip.onCellMouseLeave();
+  }
+
+  // ======================== Value / Cell renderer ========================
 
   getValue(row: T, field: string): any {
     return field.split('.').reduce((obj: any, key) => obj?.[key], row);
   }
-
-  // ======================== Cell renderer ========================
 
   isTemplateRef(value: any): value is TemplateRef<any> {
     return value instanceof TemplateRef;
   }
 
   getCellRendererInputs(col: DvColDef<T>, row: T): Record<string, any> {
-    return {
-      value: this.getValue(row, col.field),
-      row,
-      ...col.cellRendererParams,
-    };
-  }
-
-  // ======================== Row expansion ========================
-
-  isRowExpanded(row: T, index: number): boolean {
-    return this.expandedRowIds().has(this.getRowId(row, index));
-  }
-
-  onExpandToggle(event: MouseEvent, row: T, index: number): void {
-    event.stopPropagation();
-    const id = this.getRowId(row, index);
-    this.expandedRowIds.update((ids) => {
-      const next = new Set(ids);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  // ======================== Tooltip ========================
-
-  getTooltipText(col: DvColDef<T>, row: T, index: number): string | null {
-    if (col.tooltipValueGetter) {
-      return col.tooltipValueGetter({
-        value: this.getValue(row, col.field),
-        row,
-        field: col.field,
-        rowIndex: index,
-      });
-    }
-    if (col.tooltipField) {
-      const val = this.getValue(row, col.tooltipField);
-      return val != null ? String(val) : null;
-    }
-    return null;
-  }
-
-  onCellMouseEnter(event: MouseEvent, col: DvColDef<T>, row: T, index: number): void {
-    const text = this.getTooltipText(col, row, index);
-    if (!text) return;
-    const delay = this.options().tooltipShowDelay ?? 500;
-    const el = event.currentTarget as HTMLElement;
-    this.tooltipTimer = setTimeout(() => {
-      const rect = el.getBoundingClientRect();
-      const tooltipWidth = 280;
-      let left = rect.left;
-      if (left + tooltipWidth > window.innerWidth) {
-        left = rect.right - tooltipWidth;
-      }
-      this.tooltipPos.set({ top: rect.bottom + 6, left });
-      this.tooltipText.set(text);
-    }, delay);
-  }
-
-  onCellMouseLeave(): void {
-    if (this.tooltipTimer !== null) {
-      clearTimeout(this.tooltipTimer);
-      this.tooltipTimer = null;
-    }
-    this.tooltipText.set(null);
-  }
-
-  ngOnDestroy(): void {
-    if (this.tooltipTimer !== null) {
-      clearTimeout(this.tooltipTimer);
-    }
+    return { value: this.getValue(row, col.field), row, ...col.cellRendererParams };
   }
 }
