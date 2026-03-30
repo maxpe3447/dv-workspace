@@ -88,6 +88,10 @@
             <div class="status-key">Selected</div>
           </div>
           <div class="status-card">
+            <div class="status-val" style="font-size:0.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ lastClickedRow() ?? '—' }}</div>
+            <div class="status-key">Last Clicked</div>
+          </div>
+          <div class="status-card">
             <div class="status-val">{{ totalRecords() }}</div>
             <div class="status-key">Total</div>
           </div>
@@ -148,6 +152,7 @@
           [detailTemplate]="detailTpl"
           (serverDataRequested)="onServerDataRequested($event)"
           (gridReady)="onGridReady($event)"
+          (rowClick)="onRowClick($event)"
           (selectionChanged)="onSelectionChanged($event)"
         />
       </section>

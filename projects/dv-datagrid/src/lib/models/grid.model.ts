@@ -20,18 +20,24 @@ export interface DvColDef<T = any> {
   filterValues?: any[];
   width?: number;
   resizable?: boolean;
-  valueFormatter?: (param: any) => any;
+  valueFormatter?: (param: T) => any;
   cellClass?: string | ((params: CellClassParams<T>) => string);
   cellRenderer?: Type<any> | TemplateRef<any>;
-  cellRendererParams?: Record<string, any>;
+  cellRendererParams?: Record<string, T>;
   tooltipField?: string;
   tooltipValueGetter?: (params: CellClassParams<T>) => string;
+  headerTooltip?: string;
 }
 
 export interface CellClassParams<T = any> {
   value: any;
   row: T;
   field: string;
+  rowIndex: number;
+}
+
+export interface DvRowClickEvent<T = any> {
+  row: T;
   rowIndex: number;
 }
 

@@ -43,6 +43,19 @@ export class GridTooltipHandler {
     }, delay);
   }
 
+  onHeaderMouseEnter(event: MouseEvent, text: string, delay: number): void {
+    if (!text) return;
+    const el = event.currentTarget as HTMLElement;
+    this.timer = setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      const tooltipWidth = 280;
+      let left = rect.left;
+      if (left + tooltipWidth > window.innerWidth) left = rect.right - tooltipWidth;
+      this.tooltipPos.set({ top: rect.bottom + 6, left });
+      this.tooltipText.set(text);
+    }, delay);
+  }
+
   onCellMouseLeave(): void {
     if (this.timer !== null) {
       clearTimeout(this.timer);

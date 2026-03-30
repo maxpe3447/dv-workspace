@@ -5,6 +5,7 @@ import {
   DvDataGrid,
   DvGridApi,
   DvGridOptions,
+  DvRowClickEvent,
   EN_LOCALE,
   FilterInstance,
   ServerRequestParams,
@@ -123,6 +124,7 @@ export class App {
   readonly currentPage = computed(() => this._gridApi()?.currentPage() ?? 1);
   readonly totalPages = computed(() => this._gridApi()?.totalPages() ?? 1);
   readonly selectedCount = computed(() => this._gridApi()?.selectedRowIds()?.size ?? 0);
+  readonly lastClickedRow = signal<string | null>(null);
   readonly filterCount = computed(() => Object.keys(this._gridApi()?.filterModel() ?? {}).length);
 
   // ── Reactive grid options
@@ -342,6 +344,9 @@ columnDefs: DvColDef<Employee>[] = [
     cellClass: (p) => 'status-' + p.value,
     // p: { value, row, field, rowIndex }
   },
+
+  // ── Header tooltip: static text shown on column header hover
+  { field: 'department', headerName: 'Dept', headerTooltip: 'Filter by department' },
 
   // ── Tooltip: shows value of another field on hover
   { field: 'name', tooltipField: 'email' },
@@ -729,6 +734,7 @@ interface DvGridLocale {
         filter: 'set',
         filterValues: DEPARTMENTS,
         width: 130,
+        headerTooltip: 'Filter by department',
       },
       {
         field: 'role',
@@ -736,6 +742,7 @@ interface DvGridLocale {
         sortable: true,
         filter: 'text',
         width: 110,
+        headerTooltip: 'Job title / position',
       },
       {
         field: 'age',
@@ -769,7 +776,7 @@ interface DvGridLocale {
         sortable: true,
         filter: 'date',
         width: 110,
-        valueFormatter: (row) =>
+        valueFormatter: (row:Employee) =>
           new Date(row.joinDate).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -790,6 +797,10 @@ interface DvGridLocale {
 
   onGridReady(api: DvGridApi): void {
     this._gridApi.set(api);
+  }
+
+  onRowClick(event: DvRowClickEvent<Employee>): void {
+    this.lastClickedRow.set(event.row.name);
   }
 
   onSelectionChanged(_ids: any[]): void {

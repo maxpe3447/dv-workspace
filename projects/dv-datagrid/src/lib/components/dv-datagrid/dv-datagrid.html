@@ -40,6 +40,8 @@
               [class.filtered]="hasActiveFilter(col.field)"
               [class.resizable]="columnResizeEnabled() && col.resizable !== false"
               (click)="onHeaderClick(col)"
+              (mouseenter)="onHeaderMouseEnter($event, col)"
+              (mouseleave)="onCellMouseLeave()"
             >
               <div class="header-content">
                 <span class="header-label">{{ col.headerName || col.field }}</span>
