@@ -36,6 +36,11 @@ export interface CellClassParams<T = any> {
   rowIndex: number;
 }
 
+export interface DvRowClickEvent<T = any> {
+  row: T;
+  rowIndex: number;
+}
+
 export interface ServerRequestParams {
   page: number;
   pageSize: number;

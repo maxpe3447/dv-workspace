@@ -5,6 +5,7 @@ import {
   DvDataGrid,
   DvGridApi,
   DvGridOptions,
+  DvRowClickEvent,
   EN_LOCALE,
   FilterInstance,
   ServerRequestParams,
@@ -123,6 +124,7 @@ export class App {
   readonly currentPage = computed(() => this._gridApi()?.currentPage() ?? 1);
   readonly totalPages = computed(() => this._gridApi()?.totalPages() ?? 1);
   readonly selectedCount = computed(() => this._gridApi()?.selectedRowIds()?.size ?? 0);
+  readonly lastClickedRow = signal<string | null>(null);
   readonly filterCount = computed(() => Object.keys(this._gridApi()?.filterModel() ?? {}).length);
 
   // ── Reactive grid options
@@ -795,6 +797,10 @@ interface DvGridLocale {
 
   onGridReady(api: DvGridApi): void {
     this._gridApi.set(api);
+  }
+
+  onRowClick(event: DvRowClickEvent<Employee>): void {
+    this.lastClickedRow.set(event.row.name);
   }
 
   onSelectionChanged(_ids: any[]): void {

@@ -11,7 +11,7 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { NgTemplateOutlet, NgComponentOutlet } from '@angular/common';
-import { DvColDef, FilterType, DvGridApi, DvGridOptions } from '../../models/grid.model';
+import { DvColDef, FilterType, DvGridApi, DvGridOptions, DvRowClickEvent } from '../../models/grid.model';
 import { FilterInstance } from '../../models/filter.model';
 import { EN_LOCALE, DvGridLocale } from '../../models/locale.model';
 import { DvGridApiImpl } from '../../services/grid-api-impl';
@@ -38,6 +38,7 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
 
   readonly serverDataRequested = output<ReturnType<DvGridApiImpl['buildRequestParams']>>();
   readonly gridReady = output<DvGridApi>();
+  readonly rowClick = output<DvRowClickEvent<T>>();
   readonly selectionChanged = output<any[]>();
 
   // ── Internal API
@@ -247,16 +248,9 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   }
 
   onRowClick(event: MouseEvent, row: T, index: number): void {
-    if (!this.selectionEnabled()) return;
     if ((event.target as HTMLElement).closest('button, a, input, select, textarea')) return;
     if ((window.getSelection()?.toString().length ?? 0) > 0) return;
-    const id = this.getRowId(row, index);
-    if (this.selectionMode() === 'single') {
-      this.gridApi.isRowSelected(id) ? this.gridApi.deselectRow(id) : this.gridApi.selectRow(id);
-    } else if (this.selectionMode() === 'multi') {
-      this.gridApi.toggleRowSelection(id);
-    }
-    this.emitSelectionChanged();
+    this.rowClick.emit({ row, rowIndex: index });
   }
 
   private emitSelectionChanged(): void {

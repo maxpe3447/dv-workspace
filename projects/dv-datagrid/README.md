@@ -96,6 +96,7 @@ export class AppComponent {
   [detailTemplate]="myDetailTpl"
   (gridReady)="onGridReady($event)"
   (serverDataRequested)="onServerDataRequested($event)"
+  (rowClick)="onRowClick($event)"
   (selectionChanged)="onSelectionChanged($event)"
 />
 ```
@@ -107,6 +108,7 @@ export class AppComponent {
 | `[detailTemplate]` | `TemplateRef<{ $implicit: T; rowIndex: number }>` | Template for expandable row detail |
 | `(gridReady)` | `DvGridApi` | Fires once on init; provides the API handle |
 | `(serverDataRequested)` | `ServerRequestParams` | Fires on every sort / filter / page change |
+| `(rowClick)` | `DvRowClickEvent<T>` | Fires on row click (not on buttons/inputs inside the row) |
 | `(selectionChanged)` | `any[]` | Selected row IDs when selection changes |
 
 ---
@@ -313,7 +315,7 @@ this.api.setPageSize(50);
 
 ### Single
 
-Click a row to select it; click again to deselect.
+A row is selected or deselected programmatically via the grid API. Row click fires the `(rowClick)` output — it does not change selection.
 
 ```ts
 options: DvGridOptions = {
@@ -324,13 +326,27 @@ options: DvGridOptions = {
 
 ### Multi
 
-A checkbox column is added automatically. Click a row or its checkbox to toggle it. The header checkbox selects / deselects the current page.
+A checkbox column is added automatically. Use the checkboxes to toggle selection. The header checkbox selects / deselects all rows on the current page. Row click fires the `(rowClick)` output — it does not change selection.
 
 ```ts
 options: DvGridOptions = {
   rowSelection: 'multi',
   getRowId: (row) => row.id,
 };
+```
+
+### Row click
+
+Fires whenever a row is clicked (skipped for clicks on buttons, links, inputs, and text selections):
+
+```html
+<dv-datagrid (rowClick)="onRowClick($event)" />
+```
+
+```ts
+onRowClick(event: DvRowClickEvent<Employee>) {
+  console.log('Clicked row:', event.row, 'at index:', event.rowIndex);
+}
 ```
 
 ### Selection output
