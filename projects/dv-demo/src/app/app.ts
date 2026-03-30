@@ -343,6 +343,9 @@ columnDefs: DvColDef<Employee>[] = [
     // p: { value, row, field, rowIndex }
   },
 
+  // ── Header tooltip: static text shown on column header hover
+  { field: 'department', headerName: 'Dept', headerTooltip: 'Filter by department' },
+
   // ── Tooltip: shows value of another field on hover
   { field: 'name', tooltipField: 'email' },
 
@@ -729,6 +732,7 @@ interface DvGridLocale {
         filter: 'set',
         filterValues: DEPARTMENTS,
         width: 130,
+        headerTooltip: 'Filter by department',
       },
       {
         field: 'role',
@@ -736,6 +740,7 @@ interface DvGridLocale {
         sortable: true,
         filter: 'text',
         width: 110,
+        headerTooltip: 'Job title / position',
       },
       {
         field: 'age',
@@ -769,7 +774,7 @@ interface DvGridLocale {
         sortable: true,
         filter: 'date',
         width: 110,
-        valueFormatter: (row) =>
+        valueFormatter: (row:Employee) =>
           new Date(row.joinDate).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',

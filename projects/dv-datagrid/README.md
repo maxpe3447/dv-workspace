@@ -184,6 +184,7 @@ interface DvColDef<T = any> {
   // Tooltip
   tooltipField?: string;
   tooltipValueGetter?: (params: CellClassParams<T>) => string;
+  headerTooltip?: string;
 }
 
 interface CellClassParams<T> {
@@ -531,7 +532,19 @@ For simple display-only transformations:
 
 ## Tooltips
 
-Add a tooltip to any column via `tooltipField` or `tooltipValueGetter`.
+### Header tooltip
+
+Display a static tooltip when hovering over a column header:
+
+```ts
+{
+  field: 'department',
+  headerName: 'Dept',
+  headerTooltip: 'Filter by department',
+}
+```
+
+The same `tooltipShowDelay` option applies.
 
 ### Field-based tooltip
 

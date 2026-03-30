@@ -284,6 +284,11 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     );
   }
 
+  onHeaderMouseEnter(event: MouseEvent, col: DvColDef<T>): void {
+    if (!col.headerTooltip) return;
+    this.tooltip.onHeaderMouseEnter(event, col.headerTooltip, this.options().tooltipShowDelay ?? 500);
+  }
+
   onCellMouseLeave(): void {
     this.tooltip.onCellMouseLeave();
   }
