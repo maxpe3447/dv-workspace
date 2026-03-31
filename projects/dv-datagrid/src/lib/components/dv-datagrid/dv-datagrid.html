@@ -201,9 +201,15 @@
     <button class="reload-btn" (click)="loadServerData()" [title]="locale().reload">
       <svg width="14" height="14" fill="currentColor"><use href="#dv-reload"/></svg>
     </button>
-    <button class="reload-btn" (click)="exportToExcel()" [title]="locale().exportExcel">
-      <svg width="14" height="14" fill="currentColor"><use href="#dv-export"/></svg>
-    </button>
+    <div class="export-btn-wrapper">
+      <button class="reload-btn" [title]="locale().exportExcel">
+        <svg width="14" height="14" fill="currentColor"><use href="#dv-export"/></svg>
+      </button>
+      <div class="export-menu">
+        <button class="export-menu-item" (click)="exportToExcel()">{{ locale().exportExcel }}</button>
+        <button class="export-menu-item" (click)="exportToCsv()">{{ locale().exportCsv }}</button>
+      </div>
+    </div>
   </div>
 </div>
 

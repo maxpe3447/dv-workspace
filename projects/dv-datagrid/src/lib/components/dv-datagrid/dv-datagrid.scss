@@ -398,6 +398,53 @@
     svg { display: block; }
   }
 
+  .export-btn-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin: 6px 8px;
+
+    .reload-btn {
+      margin: 0;
+    }
+
+    .export-menu {
+      display: none;
+      position: absolute;
+      bottom: calc(100%);
+      right: 0;
+      min-width: 148px;
+      background: var(--pagination-bg);
+      border: 1px solid var(--pagination-border);
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    &:hover .export-menu {
+      display: block;
+    }
+
+    .export-menu-item {
+      display: block;
+      width: 100%;
+      padding: 7px 12px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--header-text);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.1s;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.06);
+      }
+    }
+  }
+
   // ====================== Scrollbar ======================
   .grid-wrapper::-webkit-scrollbar {
     height: 8px;

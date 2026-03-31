@@ -5,6 +5,7 @@ export interface DvGridLocale {
   filterButtonTitle: string;
   reload: string;
   exportExcel: string;
+  exportCsv: string;
 
   // filter menu
   filterMenuTitle: string;
@@ -51,6 +52,7 @@ export const EN_LOCALE: DvGridLocale = {
   filterButtonTitle: 'Filter',
   reload: 'Reload',
   exportExcel: 'Export to Excel',
+  exportCsv: 'Export to CSV',
 
   filterMenuTitle: 'Filter',
   operator: 'Operator',
@@ -92,6 +94,7 @@ export const UK_LOCALE: DvGridLocale = {
   filterButtonTitle: 'Фільтр',
   reload: 'Оновити',
   exportExcel: 'Експорт в Excel',
+  exportCsv: 'Експорт в CSV',
 
   filterMenuTitle: 'Фільтр',
   operator: 'Оператор',

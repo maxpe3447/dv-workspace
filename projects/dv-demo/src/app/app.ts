@@ -138,7 +138,7 @@ export class App {
     enableColumnResize: this.columnResizeEnabled(),
     getRowId: (row: Employee) => row.id,
     locale: this.activeLocale() === 'en' ? EN_LOCALE : UK_LOCALE,
-    exportFileName: 'excel-export.xlsx'
+    exportFileName: 'example-export-file'
   }));
 
   // ── Column definitions (assigned in ngOnInit after templates are available)
@@ -759,7 +759,7 @@ interface DvGridLocale {
         sortable: true,
         filter: 'number',
         width: 120,
-        valueFormatter: (row) => '$' + Number(row.salary).toLocaleString(),
+        valueFormatter: (row:Employee) => '$' + Number(row.salary).toLocaleString(),
       },
       {
         field: 'status',

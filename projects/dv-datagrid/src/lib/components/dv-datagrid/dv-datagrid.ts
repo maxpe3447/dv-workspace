@@ -132,6 +132,10 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
     this.exporter.exportToExcel(this.columnDefs(), this.rowData(), this.getValue.bind(this), this.options().exportFileName);
   }
 
+  exportToCsv(): void {
+    this.exporter.exportToCsv(this.columnDefs(), this.rowData(), this.getValue.bind(this), this.options().exportFileName);
+  }
+
   // ======================== Column resize ========================
 
   getColumnWidth(col: DvColDef): number | null {
