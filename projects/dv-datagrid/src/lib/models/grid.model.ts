@@ -96,6 +96,9 @@ export interface DvGridApi {
   setColumnFilter(field: string, filter: FilterInstance): void;
   clearColumnFilter(field: string): void;
 
+  //Sorting
+  updateSortModel(sortModel: SortItem[]): void;
+
   // Reset
   resetFilters(): void;
   resetSort(): void;

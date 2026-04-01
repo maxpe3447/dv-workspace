@@ -25,9 +25,38 @@ export class GridExportHandler {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = exportFileName ?? 'export.xlsx';
+      a.download = (exportFileName ?? 'export') + '.xlsx';
       a.click();
       URL.revokeObjectURL(url);
     });
+  }
+
+  exportToCsv<T>(
+    cols: DvColDef<T>[],
+    rows: T[],
+    getValue: (row: T, field: string) => any,
+    exportFileName?: string
+  ): void {
+    const escape = (val: any): string => {
+      const str = val == null ? '' : String(val);
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const headers = cols.map(col => escape(col.headerName ?? col.field));
+    const dataRows = rows.map(row =>
+      cols.map(col =>
+        escape(col.valueFormatter ? col.valueFormatter(row) : getValue(row, col.field))
+      ).join(',')
+    );
+
+    const csv = [headers.join(','), ...dataRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (exportFileName ?? 'export') + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
