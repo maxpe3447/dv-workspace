@@ -103,6 +103,7 @@ export class App {
   // ── View children
   readonly emailTpl = viewChild.required<TemplateRef<any>>('emailTpl');
   readonly detailTpl = viewChild.required<TemplateRef<any>>('detailTpl');
+  readonly headerTpl = viewChild.required<TemplateRef<any>>('headerTpl');
 
   // ── Grid config state
   readonly activeTheme = signal<'alpine' | 'material' | 'dark'>('alpine');
@@ -115,6 +116,9 @@ export class App {
   readonly activeExample = signal('basicSetup');
   readonly activeLang = signal<'ts' | 'html'>('ts');
   readonly copiedCode = signal(false);
+
+  // ── Toolbar search
+  readonly nameSearch = signal('');
 
   // ── Grid API (stored as signal so template computeds track it)
   private readonly _gridApi = signal<DvGridApi | null>(null);
@@ -189,6 +193,7 @@ export class App {
     { key: 'columnResize', label: 'Col Resize', hasHtml: false },
     { key: 'gridApi', label: 'Grid API', hasHtml: false },
     { key: 'themes', label: 'Themes & Locale', hasHtml: false },
+    { key: 'headerTemplate', label: 'Header Toolbar', hasHtml: true },
   ];
 
   readonly currentExample = computed(
@@ -707,6 +712,51 @@ interface DvGridLocale {
   nextPage: string;         lastPage: string;
 }`,
     },
+    headerTemplate: {
+      ts: `// Capture the template ref after view init
+readonly headerTpl = viewChild.required<TemplateRef<any>>('headerTpl');
+
+// Optional: drive a search input from the toolbar
+readonly nameSearch = signal('');
+
+onNameSearch(event: Event): void {
+  const value = (event.target as HTMLInputElement).value;
+  this.nameSearch.set(value);
+  if (value) {
+    this.api.setColumnFilter('name', { type: 'text', operator: 'ctns', value });
+  } else {
+    this.api.clearColumnFilter('name');
+  }
+}`,
+      html: `<!-- Pass the template to the grid -->
+<dv-datagrid
+  [columnDefs]="columnDefs"
+  [options]="gridOptions"
+  [headerTemplate]="headerTpl"
+  (serverDataRequested)="onData($event)"
+  (gridReady)="onReady($event)"
+/>
+
+<!-- Toolbar template — rendered above the table -->
+<ng-template #headerTpl>
+  <span class="toolbar-title">Employees</span>
+
+  <!-- Search input wired to a text filter via the Grid API -->
+  <input
+    class="toolbar-search"
+    type="text"
+    placeholder="Search by name…"
+    [value]="nameSearch()"
+    (input)="onNameSearch($event)"
+  />
+
+  <div style="flex:1"></div>
+
+  <button (click)="api.selectAll(pageIds)">Select Page</button>
+  <button (click)="api.clearSelection()">Clear Selection</button>
+  <button (click)="api.resetAll()">Reset All</button>
+</ng-template>`,
+    },
   };
 
   // ─── Lifecycle ───────────────────────────────────────────────
@@ -887,6 +937,18 @@ interface DvGridLocale {
   }
 
   // ─── API action helpers ───────────────────────────────────────
+
+  onNameSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.nameSearch.set(value);
+    const api = this._gridApi();
+    if (!api) return;
+    if (value) {
+      api.setColumnFilter('name', { type: 'text', operator: 'ctns', value });
+    } else {
+      api.clearColumnFilter('name');
+    }
+  }
 
   selectAllOnPage(): void {
     const api = this._gridApi();
