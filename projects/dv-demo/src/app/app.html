@@ -150,6 +150,7 @@
           [columnDefs]="columnDefs"
           [options]="gridOptions()"
           [detailTemplate]="detailTpl"
+          [headerTemplate]="headerTpl"
           (serverDataRequested)="onServerDataRequested($event)"
           (gridReady)="onGridReady($event)"
           (rowClick)="onRowClick($event)"
@@ -223,6 +224,22 @@
 </div><!-- /demo-page -->
 
 <!-- ══════════════ TEMPLATES ══════════════ -->
+
+<!-- Grid toolbar -->
+<ng-template #headerTpl>
+  <span class="toolbar-title">Employees</span>
+  <input
+    class="toolbar-search"
+    type="text"
+    placeholder="Search by name…"
+    [value]="nameSearch()"
+    (input)="onNameSearch($event)"
+  />
+  <div class="toolbar-spacer"></div>
+  <button class="toolbar-btn" (click)="selectAllOnPage()">Select Page</button>
+  <button class="toolbar-btn" (click)="clearSelection()">Clear Selection</button>
+  <button class="toolbar-btn toolbar-btn-danger" (click)="resetAll()">Reset All</button>
+</ng-template>
 
 <!-- Email cell renderer -->
 <ng-template #emailTpl let-value>

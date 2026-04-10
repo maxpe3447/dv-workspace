@@ -10,6 +10,13 @@
 </svg>
 
 <div class="my-data-grid" [class]="themeClass()" [class.is-resizing]="isResizing()">
+  <!-- TOOLBAR -->
+  @if (headerTemplate()) {
+    <div class="grid-toolbar">
+      <ng-container *ngTemplateOutlet="headerTemplate()!" />
+    </div>
+  }
+
   <!-- Table -->
   <div class="grid-wrapper">
     <table class="grid-table">

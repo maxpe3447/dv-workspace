@@ -684,6 +684,58 @@
   }
 }
 
+// ── Grid toolbar (rendered inside dv-datagrid via headerTemplate)
+.toolbar-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.toolbar-search {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  width: 200px;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #0d6efd;
+  }
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.toolbar-btn {
+  padding: 5px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+  }
+
+  &.toolbar-btn-danger {
+    border-color: #fca5a5;
+    color: #dc2626;
+
+    &:hover {
+      background: #fef2f2;
+      border-color: #f87171;
+    }
+  }
+}
+
 // ── Order status badges
 .order-badge {
   display: inline-block;

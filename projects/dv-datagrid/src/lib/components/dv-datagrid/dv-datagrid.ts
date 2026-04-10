@@ -35,6 +35,7 @@ export class DvDataGrid<T extends object = object> implements OnInit, OnDestroy 
   readonly columnDefs = input<DvColDef<T>[]>([]);
   readonly options = input<DvGridOptions>({});
   readonly detailTemplate = input<TemplateRef<{ $implicit: T; rowIndex: number }> | null>(null);
+  readonly headerTemplate = input<TemplateRef<void> | null>(null);
 
   readonly serverDataRequested = output<ReturnType<DvGridApiImpl['buildRequestParams']>>();
   readonly gridReady = output<DvGridApi>();
